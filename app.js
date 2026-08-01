@@ -246,6 +246,9 @@ function renderCalendar() {
     const month = currentDate.getMonth();
     document.getElementById('current-period-label').innerText = `${monthsRu[month]} ${year}`;
 
+    // Дата "сегодня" для подсветки
+    const todayStr = formatDateStr(new Date());
+
     let firstDay = new Date(year, month, 1).getDay();
     firstDay = firstDay === 0 ? 6 : firstDay - 1;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -262,9 +265,10 @@ function renderCalendar() {
         const dateObj = new Date(year, month, day);
         const dateStr = formatDateStr(dateObj);
         const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+        const isToday = dateStr === todayStr;
         
         const cell = document.createElement('div');
-        cell.className = `day-card ${isWeekend ? 'is-weekend' : ''}`;
+        cell.className = `day-card ${isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''}`;
         
         let bdayHtml = '';
         const monthDayKey = dateStr.slice(5);
