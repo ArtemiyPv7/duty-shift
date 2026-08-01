@@ -528,25 +528,12 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     }
 
     .app-container {
-        display: flex;
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 12px;
     }
 
-    /* Порядок блоков на мобилках */
     .main-content {
-        order: 1;
         padding: 10px;
-    }
-
-    /* Аналитика (первая панель) */
-    .sidebar .glass-panel:nth-child(1) {
-        order: 2;
-    }
-
-    /* Сотрудники (панель с сотрудниками) */
-    .sidebar .glass-panel:nth-child(4) {
-        order: 3;
     }
 
     /* Жестко фиксируем 7 колонок для дней недели, чтобы они не уходили за экран */
