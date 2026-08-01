@@ -521,6 +521,23 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
 }
 
+/* Стили для подсвечивания текущего дня */
+.day-card.is-today {
+    border: 2px solid var(--accent-green) !important;
+    background: rgba(0, 255, 136, 0.08) !important;
+    box-shadow: 0 0 15px var(--accent-glow) !important;
+}
+
+.day-card.is-today .day-number {
+    color: var(--accent-green);
+    font-weight: 800;
+}
+
+.day-card.is-today .duty-tag {
+    background: rgba(0, 255, 136, 0.2);
+    font-weight: 600;
+}
+
 /* Мобильная адаптивность */
 @media (max-width: 768px) {
     body {
