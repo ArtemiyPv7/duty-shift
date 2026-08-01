@@ -520,3 +520,37 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     0%, 100% { box-shadow: 0 0 0 rgba(255, 183, 3, 0); }
     50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
 }
+
+/* Мобильная адаптивность */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .app-container {
+        grid-template-columns: 1fr; /* Переводим всю сетку в один столбец */
+        gap: 15px;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .calendar-grid {
+        gap: 4px; /* Уменьшаем отступы между днями в календаре */
+    }
+
+    .day-card {
+        min-height: 60px;
+        padding: 4px;
+    }
+
+    .day-number {
+        font-size: 12px;
+    }
+
+    .duty-tag {
+        font-size: 11px;
+        padding: 2px 4px;
+    }
+}
