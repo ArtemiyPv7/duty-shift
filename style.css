@@ -524,33 +524,43 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 /* Мобильная адаптивность */
 @media (max-width: 768px) {
     body {
-        padding: 10px;
+        padding: 8px;
     }
 
     .app-container {
-        grid-template-columns: 1fr; /* Переводим всю сетку в один столбец */
-        gap: 15px;
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 
     .main-content {
-        padding: 15px;
+        padding: 10px;
     }
 
+    /* Жестко фиксируем 7 колонок для дней недели, чтобы они не уходили за экран */
     .calendar-grid {
-        gap: 4px; /* Уменьшаем отступы между днями в календаре */
+        grid-template-columns: repeat(7, 1fr) !important;
+        gap: 2px;
+    }
+
+    .weekday {
+        font-size: 11px;
+        padding: 4px 0;
     }
 
     .day-card {
-        min-height: 60px;
-        padding: 4px;
+        min-height: 52px;
+        padding: 2px;
     }
 
     .day-number {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .duty-tag {
-        font-size: 11px;
-        padding: 2px 4px;
+        font-size: 9px;
+        padding: 1px 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
