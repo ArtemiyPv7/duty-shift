@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DutyShift 2026 — Расписание Дежурств</title>
+    <title>DutyShift</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,6 +24,7 @@
             </div>
 
             <div class="nav-btns">
+                <button class="nav-btn" id="auth-btn" onclick="handleAuthClick()">🔑 Вход</button>
                 <button class="nav-btn" onclick="navigatePeriod(-1)">← Пред</button>
                 <button class="nav-btn" onclick="goToday()">Сегодня</button>
                 <button class="nav-btn" onclick="navigatePeriod(1)">След →</button>
@@ -50,11 +52,11 @@
             <div class="section-title" onclick="toggleSection('vacations-panel', event)">
                 <span>🌴 Отпуска <span class="toggle-arrow">▼</span></span>
                 <div class="section-header-actions">
-                    <button class="icon-btn" onclick="toggleForm('vacation-form', this, event)" title="Добавить отпуск">+</button>
+                    <button class="icon-btn admin-only" onclick="toggleForm('vacation-form', this, event)" title="Добавить отпуск">+</button>
                 </div>
             </div>
             <div class="events-list" id="vacations-list"></div>
-            <div class="add-form" id="vacation-form">
+            <div class="add-form admin-only" id="vacation-form">
                 <input type="text" id="vacation-name" placeholder="Сотрудник">
                 <div style="display:flex; gap:4px;">
                     <input type="date" id="vacation-start" title="Начало">
@@ -69,11 +71,11 @@
             <div class="section-title" onclick="toggleSection('bday-panel', event)">
                 <span>🎂 Дни Рождения <span class="toggle-arrow">▼</span></span>
                 <div class="section-header-actions">
-                    <button class="icon-btn" onclick="toggleForm('bday-form', this, event)" title="Добавить день рождения">+</button>
+                    <button class="icon-btn admin-only" onclick="toggleForm('bday-form', this, event)" title="Добавить день рождения">+</button>
                 </div>
             </div>
             <div class="events-list" id="birthdays-list"></div>
-            <div class="add-form" id="bday-form">
+            <div class="add-form admin-only" id="bday-form">
                 <input type="text" id="bday-name" placeholder="ФИО / Имя">
                 <div style="display:flex; gap:4px;">
                     <input type="text" id="bday-day" placeholder="День (1-31)" style="width: 50%;">
@@ -87,7 +89,7 @@
         <div class="glass-panel">
             <div class="section-title" style="cursor: default;">👥 Сотрудники</div>
             <div class="staff-list" id="staff-list"></div>
-            <div style="display:flex; gap:6px; margin-top:10px;">
+            <div class="admin-only" style="display:flex; gap:6px; margin-top:10px;">
                 <input type="text" id="new-staff-name" placeholder="Имя сотрудника">
                 <button class="btn" onclick="addStaff()">+</button>
             </div>
@@ -105,6 +107,18 @@
             <button class="btn danger-btn" onclick="deleteModalShift()">Снять</button>
         </div>
         <button class="nav-btn" style="width:100%;" onclick="closeModal()">Отмена</button>
+    </div>
+</div>
+
+<!-- Модальное окно авторизации -->
+<div class="modal-overlay" id="auth-modal">
+    <div class="modal">
+        <h3 style="font-size: 1.1rem; color: #fff;">Вход администратора</h3>
+        <input type="password" id="auth-password-input" placeholder="Введите пароль..." onkeyup="if(event.key==='Enter') loginAdmin()">
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn" style="flex: 1;" onclick="loginAdmin()">Войти</button>
+            <button class="btn danger-btn" onclick="closeAuthModal()">Отмена</button>
+        </div>
     </div>
 </div>
 

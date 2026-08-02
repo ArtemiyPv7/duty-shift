@@ -521,6 +521,14 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
 }
 
+/* Стиль для активной кнопки входа */
+.nav-btn.active-auth {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
 /* Стили для подсвечивания текущего дня */
 .day-card.is-today {
     border: 2px solid var(--accent-green) !important;

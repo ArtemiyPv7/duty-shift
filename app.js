@@ -3,6 +3,12 @@ const SUPABASE_URL = 'https://fxdzzmgxsakmxymjnefd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Zug-QaFA6stMJ_XQuvOoUw_ZqwgUXTH';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ПАРОЛЬ АДМИНИСТРАТОРА
+const ADMIN_PASSWORD = '123'; // <-- Замени на свой пароль!
+
+// Состояние авторизации (сбрасывается при F5 / перезаходе)
+let isAdminLoggedIn = false;
+
 let currentDate = new Date(); 
 let selectedStaff = null;
 let activeEditDate = null;
@@ -26,18 +32,15 @@ function formatDateStr(date) {
 // Загрузка всех данных из Supabase
 async function loadDataFromSupabase() {
     try {
-        // 1. Загрузка сотрудников
         const { data: staffData } = await supabaseClient.from('staff').select('name');
         if (staffData) staff = staffData.map(item => item.name);
 
-        // 2. Загрузка смен
         const { data: shiftsData } = await supabaseClient.from('shifts').select('*');
         if (shiftsData) {
             shifts = {};
             shiftsData.forEach(s => { shifts[s.shift_date] = s.staff_name; });
         }
 
-        // 3. Загрузка отпусков
         const { data: vacData } = await supabaseClient.from('vacations').select('*');
         if (vacData) {
             vacations = vacData.map(v => ({
@@ -48,7 +51,6 @@ async function loadDataFromSupabase() {
             }));
         }
 
-        // 4. Загрузка дней рождения
         const { data: bdayData } = await supabaseClient.from('birthdays').select('*');
         if (bdayData) {
             birthdays = {};
@@ -66,10 +68,62 @@ async function init() {
     renderEvents();
     renderCalendar();
     updateAnalytics();
+    updateUiForAuthRole();
+}
+
+// --- Логика Авторизации ---
+function handleAuthClick() {
+    if (isAdminLoggedIn) {
+        // Если уже вошли — выходим
+        isAdminLoggedIn = false;
+        updateUiForAuthRole();
+    } else {
+        // Открываем модалку для ввода пароля
+        const modal = document.getElementById('auth-modal');
+        document.getElementById('auth-password-input').value = '';
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+        document.getElementById('auth-password-input').focus();
+    }
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+function loginAdmin() {
+    const input = document.getElementById('auth-password-input').value;
+    if (input === ADMIN_PASSWORD) {
+        isAdminLoggedIn = true;
+        closeAuthModal();
+        updateUiForAuthRole();
+    } else {
+        alert('Неверный пароль!');
+    }
+}
+
+// Переключение интерфейса под статус авторизации
+function updateUiForAuthRole() {
+    const btn = document.getElementById('auth-btn');
+    if (btn) {
+        btn.innerHTML = isAdminLoggedIn ? '🔒 Выйти' : '🔑 Вход';
+        btn.classList.toggle('active-auth', isAdminLoggedIn);
+    }
+
+    // Скрываем или показываем элеметы редактирования
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdminLoggedIn ? '' : 'none';
+    });
+
+    renderEvents();
+    renderStaff();
 }
 
 function populateMonthDropdown() {
     const select = document.getElementById('bday-month');
+    if (!select) return;
     select.innerHTML = '';
     monthsRu.forEach((m, idx) => {
         const opt = document.createElement('option');
@@ -112,25 +166,29 @@ function formatVacationRange(startStr, endStr) {
 function renderEvents() {
     const vacContainer = document.getElementById('vacations-list');
     const bdayContainer = document.getElementById('birthdays-list');
+    if (!vacContainer || !bdayContainer) return;
+    
     vacContainer.innerHTML = '';
     bdayContainer.innerHTML = '';
 
     vacations.forEach(v => {
         const formattedDate = formatVacationRange(v.start, v.end);
+        const delBtn = isAdminLoggedIn ? `<span class="delete-btn" onclick="deleteVacation(${v.id})">&times;</span>` : '';
         vacContainer.innerHTML += `
             <div class="info-card vacation">
                 <span><b>${v.name}</b>: ${formattedDate}</span>
-                <span class="delete-btn" onclick="deleteVacation(${v.id})">&times;</span>
+                ${delBtn}
             </div>`;
     });
 
     Object.keys(birthdays).sort().forEach(dateKey => {
         const [m, d] = dateKey.split('-');
         const monthName = monthsRuGenitive[parseInt(m) - 1];
+        const delBtn = isAdminLoggedIn ? `<span class="delete-btn" onclick="deleteBirthday('${dateKey}')">&times;</span>` : '';
         bdayContainer.innerHTML += `
             <div class="info-card bday">
                 <span><b>${birthdays[dateKey]}</b> — ${parseInt(d)} ${monthName}</span>
-                <span class="delete-btn" onclick="deleteBirthday('${dateKey}')">&times;</span>
+                ${delBtn}
             </div>`;
     });
 }
@@ -138,10 +196,11 @@ function renderEvents() {
 function toggleSection(panelId, e) {
     if (e && e.target.closest('.icon-btn')) return;
     const panel = document.getElementById(panelId);
-    panel.classList.toggle('collapsed');
+    if (panel) panel.classList.toggle('collapsed');
 }
 
 function toggleForm(formId, btn, e) {
+    if (!isAdminLoggedIn) return; // Запрет для гостей
     if (e) e.stopPropagation();
     
     const form = document.getElementById(formId);
@@ -159,6 +218,7 @@ function toggleForm(formId, btn, e) {
 }
 
 async function addVacation() {
+    if (!isAdminLoggedIn) return;
     const name = document.getElementById('vacation-name').value.trim();
     const start = document.getElementById('vacation-start').value;
     const end = document.getElementById('vacation-end').value;
@@ -176,23 +236,21 @@ async function addVacation() {
             document.getElementById('vacation-end').value = '';
             renderEvents();
             toggleForm('vacation-form', document.querySelector("#vacations-panel .icon-btn"));
-        } else {
-            console.error('Ошибка добавления отпуска:', error);
         }
     }
 }
 
 async function deleteVacation(id) {
+    if (!isAdminLoggedIn) return;
     const { error } = await supabaseClient.from('vacations').delete().eq('id', id);
     if (!error) {
         vacations = vacations.filter(v => v.id !== id);
         renderEvents();
-    } else {
-        console.error('Ошибка удаления отпуска:', error);
     }
 }
 
 async function addBirthday() {
+    if (!isAdminLoggedIn) return;
     const name = document.getElementById('bday-name').value.trim();
     const day = parseInt(document.getElementById('bday-day').value);
     const month = document.getElementById('bday-month').value;
@@ -210,20 +268,17 @@ async function addBirthday() {
             renderEvents();
             renderCalendar();
             toggleForm('bday-form', document.querySelector("#bday-panel .icon-btn"));
-        } else {
-            console.error('Ошибка добавления ДР:', error);
         }
     }
 }
 
 async function deleteBirthday(dateKey) {
+    if (!isAdminLoggedIn) return;
     const { error } = await supabaseClient.from('birthdays').delete().eq('date_key', dateKey);
     if (!error) {
         delete birthdays[dateKey];
         renderEvents();
         renderCalendar();
-    } else {
-        console.error('Ошибка удаления ДР:', error);
     }
 }
 
@@ -246,7 +301,6 @@ function renderCalendar() {
     const month = currentDate.getMonth();
     document.getElementById('current-period-label').innerText = `${monthsRu[month]} ${year}`;
 
-    // Дата "сегодня" для подсветки
     const todayStr = formatDateStr(new Date());
 
     let firstDay = new Date(year, month, 1).getDay();
@@ -292,7 +346,13 @@ function renderCalendar() {
             cell.appendChild(tag);
         }
 
-        cell.onclick = () => openModal(dateStr);
+        // Вызываем окно редактирования смены ТОЛЬКО если пользователь — админ
+        cell.onclick = () => {
+            if (isAdminLoggedIn) {
+                openModal(dateStr);
+            }
+        };
+        
         grid.appendChild(cell);
     }
 }
@@ -309,6 +369,7 @@ function updateHighlights() {
 }
 
 function openModal(dateStr) {
+    if (!isAdminLoggedIn) return;
     activeEditDate = dateStr;
     document.getElementById('modal-date-title').innerText = `Смена на ${dateStr}`;
     const select = document.getElementById('modal-staff-select');
@@ -337,7 +398,7 @@ function closeModal() {
 }
 
 async function saveModalShift() {
-    if (!activeEditDate) return;
+    if (!isAdminLoggedIn || !activeEditDate) return;
     const person = document.getElementById('modal-staff-select').value;
 
     const { error } = await supabaseClient.from('shifts').upsert([
@@ -350,13 +411,11 @@ async function saveModalShift() {
         renderCalendar();
         renderStaff();
         updateAnalytics();
-    } else {
-        console.error('Ошибка сохранения смены:', error);
     }
 }
 
 async function deleteModalShift() {
-    if (!activeEditDate) return;
+    if (!isAdminLoggedIn || !activeEditDate) return;
 
     const { error } = await supabaseClient.from('shifts').delete().eq('shift_date', activeEditDate);
 
@@ -366,13 +425,12 @@ async function deleteModalShift() {
         renderCalendar();
         renderStaff();
         updateAnalytics();
-    } else {
-        console.error('Ошибка удаления смены:', error);
     }
 }
 
 function renderStaff() {
     const list = document.getElementById('staff-list');
+    if (!list) return;
     list.innerHTML = '';
 
     staff.forEach(name => {
@@ -382,9 +440,11 @@ function renderStaff() {
         const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
         const monthCount = Object.keys(shifts).filter(d => d.startsWith(currentMonthStr) && shifts[d] === name).length;
 
+        const delBtn = isAdminLoggedIn ? `<span class="delete-btn" onclick="deleteStaff('${name}', event)">&times;</span>` : '';
+
         item.innerHTML = `
             <span onclick="selectStaff('${name}')" style="flex:1;">${name} (${monthCount})</span>
-            <span class="delete-btn" onclick="deleteStaff('${name}', event)">&times;</span>
+            ${delBtn}
         `;
         list.appendChild(item);
     });
@@ -398,6 +458,7 @@ function selectStaff(name) {
 }
 
 async function addStaff() {
+    if (!isAdminLoggedIn) return;
     const input = document.getElementById('new-staff-name');
     const name = input.value.trim();
     if (name && !staff.includes(name)) {
@@ -406,13 +467,12 @@ async function addStaff() {
             staff.push(name);
             input.value = '';
             renderStaff();
-        } else {
-            console.error('Ошибка добавления сотрудника:', error);
         }
     }
 }
 
 async function deleteStaff(name, event) {
+    if (!isAdminLoggedIn) return;
     event.stopPropagation();
     const { error } = await supabaseClient.from('staff').delete().eq('name', name);
     if (!error) {
@@ -421,8 +481,6 @@ async function deleteStaff(name, event) {
         renderStaff();
         renderCalendar();
         updateAnalytics();
-    } else {
-        console.error('Ошибка удаления сотрудника:', error);
     }
 }
 
