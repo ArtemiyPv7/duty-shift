@@ -488,6 +488,17 @@ function updateAnalytics() {
     const currentYear = currentDate.getFullYear();
     const currentMonthStr = `${currentYear}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
+    // Часы переработки: 1-Пн, 2-Вт, 3-Ср, 4-Чт, 5-Пт, 6-Сб, 0-Вс
+    const overtimeByDay = {
+        1: 16,
+        2: 16,
+        3: 16,
+        4: 16,
+        5: 24,
+        6: 32,
+        0: 24
+    };
+
     if (selectedStaff) {
         const userMonthShifts = Object.keys(shifts).filter(d => d.startsWith(currentMonthStr) && shifts[d] === selectedStaff);
         const userYearShifts = Object.keys(shifts).filter(d => d.startsWith(String(currentYear)) && shifts[d] === selectedStaff);
@@ -497,14 +508,10 @@ function updateAnalytics() {
 
         let overtimeHours = 0;
         userMonthShifts.forEach(dStr => {
-            const dateObj = new Date(dStr);
+            const [y, m, d] = dStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
             const dayOfWeek = dateObj.getDay();
-            
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                overtimeHours += 24;
-            } else {
-                overtimeHours += 15;
-            }
+            overtimeHours += overtimeByDay[dayOfWeek] || 0;
         });
 
         document.getElementById('stat-user-overtime').innerText = `${overtimeHours} ч.`;
