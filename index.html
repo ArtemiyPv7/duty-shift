@@ -4,77 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPM Roster</title>
+    
+    <!-- Фавикон и шрифты -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Подключаем Supabase SDK -->
+    
+    <!-- Supabase SDK (База данных) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Подключаем внешние стили -->
+    
+    <!-- Таблица стилей приложения -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- Основной контейнер приложения -->
 <div class="app-container">
-    <div class="main-section">
-        <div class="glass-panel header-controls">
+
+    <!-- Левая/Главная секция: Шапка, Управление и Сетка календаря -->
+    <main class="main-section">
+        
+        <!-- Верхняя панель управления и навигации по месяцам -->
+        <header class="glass-panel header-controls">
             <div class="title-group">
                 <h1><span>⚡</span> IPM Roster</h1>
                 <p id="current-period-label" style="color: var(--text-dim); font-size: 0.85rem;">Загрузка...</p>
             </div>
 
-            <div class="nav-btns">
+            <nav class="nav-btns" aria-label="Навигация по календарю">
                 <button class="nav-btn" id="auth-btn" onclick="handleAuthClick()">🔑 Вход</button>
-                <button class="nav-btn" onclick="navigatePeriod(-1)">← Пред</button>
-                <button class="nav-btn" onclick="goToday()">Сегодня</button>
-                <button class="nav-btn" onclick="navigatePeriod(1)">След →</button>
-            </div>
-        </div>
+                <button class="nav-btn" onclick="navigatePeriod(-1)" title="Предыдущий месяц">← Пред</button>
+                <button class="nav-btn" onclick="goToday()" title="Перейти к текущему дню">Сегодня</button>
+                <button class="nav-btn" onclick="navigatePeriod(1)" title="Следующий месяц">След →</button>
+            </nav>
+        </header>
 
-        <div class="glass-panel" style="flex: 1;">
+        <!-- Контейнер сетки календаря -->
+        <section class="glass-panel" style="flex: 1;" aria-label="Сетка календаря">
             <div class="calendar-grid" id="calendar-grid"></div>
-        </div>
-    </div>
+        </section>
+        
+    </main>
 
-    <div class="sidebar">
-        <!-- Дашборд -->
-        <div class="glass-panel">
+    <!-- Правая боковая панель (Информационные блоки и администрирование) -->
+    <aside class="sidebar" aria-label="Боковая панель">
+        
+        <!-- Блок 1: Аналитика и учет переработок -->
+        <section class="glass-panel">
             <div class="section-title" style="cursor: default;">📊 Аналитика</div>
             <div class="stats-grid" style="margin-top: 10px;">
-                <div class="stat-card"><div class="stat-label">Дежурств / Месяц</div><div class="stat-value" id="stat-user-month">-</div></div>
-                <div class="stat-card"><div class="stat-label">Дежурств / Год</div><div class="stat-value" id="stat-user-year">-</div></div>
-                <div class="stat-card full-width"><div class="stat-label">Переработки (Фильтр / Месяц)</div><div class="stat-value" id="stat-user-overtime">-</div></div>
+                <div class="stat-card">
+                    <div class="stat-label">Дежурств / Месяц</div>
+                    <div class="stat-value" id="stat-user-month">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Дежурств / Год</div>
+                    <div class="stat-value" id="stat-user-year">-</div>
+                </div>
+                <div class="stat-card full-width">
+                    <div class="stat-label">Переработки (Фильтр / Месяц)</div>
+                    <div class="stat-value" id="stat-user-overtime">-</div>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Раздельный блок: Отпуска -->
-        <div class="glass-panel collapsed" id="vacations-panel">
+        <!-- Блок 2: График отпусков сотрудников -->
+        <section class="glass-panel collapsed" id="vacations-panel">
             <div class="section-title" onclick="toggleSection('vacations-panel', event)">
                 <span>🌴 Отпуска <span class="toggle-arrow">▼</span></span>
                 <div class="section-header-actions">
                     <button class="icon-btn admin-only" onclick="toggleForm('vacation-form', this, event)" title="Добавить отпуск">+</button>
                 </div>
             </div>
+            
+            <!-- Динамический список отпусков -->
             <div class="events-list" id="vacations-list"></div>
+            
+            <!-- Форма добавления отпуска (только для Админа) -->
             <div class="add-form admin-only" id="vacation-form">
                 <input type="text" id="vacation-name" placeholder="Сотрудник">
                 <div style="display:flex; gap:4px;">
-                    <input type="date" id="vacation-start" title="Начало">
-                    <input type="date" id="vacation-end" title="Конец">
+                    <input type="date" id="vacation-start" title="Начало отпуска">
+                    <input type="date" id="vacation-end" title="Конец отпуска">
                 </div>
                 <button class="btn" onclick="addVacation()">Добавить отпуск</button>
             </div>
-        </div>
+        </section>
 
-        <!-- Раздельный блок: Дни Рождения -->
-        <div class="glass-panel collapsed" id="bday-panel">
+        <!-- Блок 3: Дни рождения сотрудников -->
+        <section class="glass-panel collapsed" id="bday-panel">
             <div class="section-title" onclick="toggleSection('bday-panel', event)">
                 <span>🎂 Дни Рождения <span class="toggle-arrow">▼</span></span>
                 <div class="section-header-actions">
                     <button class="icon-btn admin-only" onclick="toggleForm('bday-form', this, event)" title="Добавить день рождения">+</button>
                 </div>
             </div>
+            
+            <!-- Динамический список дней рождения -->
             <div class="events-list" id="birthdays-list"></div>
+            
+            <!-- Форма добавления дня рождения (только для Админа) -->
             <div class="add-form admin-only" id="bday-form">
                 <input type="text" id="bday-name" placeholder="ФИО / Имя">
                 <div style="display:flex; gap:4px;">
@@ -83,26 +113,31 @@
                 </div>
                 <button class="btn" onclick="addBirthday()">Добавить ДР</button>
             </div>
-        </div>
+        </section>
 
-        <!-- Управление Сотрудниками -->
-        <div class="glass-panel">
+        <!-- Блок 4: Управление и фильтрация сотрудников -->
+        <section class="glass-panel">
             <div class="section-title" style="cursor: default;">
                 <span>👥 Сотрудники <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: normal;">(нажмите для фильтра)</span></span>
             </div>
+            
+            <!-- Динамический список кнопок фильтрации сотрудников -->
             <div class="staff-list" id="staff-list"></div>
+            
+            <!-- Форма быстрого добавления нового сотрудника (только для Админа) -->
             <div class="admin-only" style="display:flex; gap:6px; margin-top:10px;">
                 <input type="text" id="new-staff-name" placeholder="Имя сотрудника">
                 <button class="btn" onclick="addStaff()">+</button>
             </div>
-        </div>
-    </div>
+        </section>
+        
+    </aside>
 
-    <!-- Подвал приложения -->
+    <!-- Подвал приложения (Статус системы, Версия и Справка) -->
     <footer class="app-footer">
         <div class="footer-copyright">
             © IPM Roster
-            <span class="status-badge" title="Подключение к Supabase активна">
+            <span class="status-badge" title="Подключение к базе данных Supabase активно">
                 <span class="status-dot"></span> Система работает
             </span>
         </div>
@@ -111,10 +146,15 @@
             <a href="#" class="footer-link" onclick="openHelpModal(event)">Справка</a>
         </div>
     </footer>
+    
 </div>
 
-<!-- Модальное окно для смены -->
-<div class="modal-overlay" id="shift-modal">
+<!-- ========================================================================= -->
+<!-- МОДАЛЬНЫЕ ОКНА ПРИЛОЖЕНИЯ                                                 -->
+<!-- ========================================================================= -->
+
+<!-- 1. Модальное окно: Назначение / Редактирование смены -->
+<div class="modal-overlay" id="shift-modal" role="dialog" aria-hidden="true">
     <div class="modal">
         <h3 id="modal-date-title" style="color:#fff; font-size:1.1rem;">Редактирование</h3>
         <select id="modal-staff-select"></select>
@@ -126,8 +166,8 @@
     </div>
 </div>
 
-<!-- Модальное окно авторизации -->
-<div class="modal-overlay" id="auth-modal">
+<!-- 2. Модальное окно: Авторизация Администратора -->
+<div class="modal-overlay" id="auth-modal" role="dialog" aria-hidden="true">
     <div class="modal">
         <h3 style="font-size: 1.1rem; color: #fff;">Вход администратора</h3>
         <input type="password" id="auth-password-input" placeholder="Введите пароль..." onkeyup="if(event.key==='Enter') loginAdmin()">
@@ -138,31 +178,31 @@
     </div>
 </div>
 
-<!-- Модальное окно Чейнджлога -->
-<div class="modal-overlay" id="changelog-modal">
+<!-- 3. Модальное окно: История обновлений (Чейнджлог) -->
+<div class="modal-overlay" id="changelog-modal" role="dialog" aria-hidden="true">
     <div class="modal changelog-modal-content">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="font-size: 1.1rem; color: #fff;">История обновлений</h3>
             <span class="version-tag">v1.1.3</span>
         </div>
         <div class="changelog-body" id="changelog-body">
-            <!-- JS подгрузит детали релиза -->
+            <!-- Список релизов подгружается динамически из app.js -->
         </div>
         <button class="btn" style="width:100%; margin-top: 10px;" onclick="closeChangelogModal()">Закрыть</button>
     </div>
 </div>
 
-<!-- Модальное окно Справки -->
-<div class="modal-overlay" id="help-modal">
+<!-- 4. Модальное окно: Справка и руководство пользователя -->
+<div class="modal-overlay" id="help-modal" role="dialog" aria-hidden="true">
     <div class="modal" style="width: 700px !important; max-width: 90vw !important; max-height: 85vh !important; display: flex !important; flex-direction: column !important; padding: 24px !important;">
         
-        <!-- Шапка -->
+        <!-- Заголовок справки -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h3 style="font-size: 1.2rem; color: #fff; margin: 0;">📖 Справка и руководство</h3>
             <span class="version-tag">IPM Roster</span>
         </div>
 
-        <!-- Контент с прокруткой -->
+        <!-- Прокручиваемое содержимое -->
         <div class="help-body" style="flex: 1; overflow-y: auto !important; padding-right: 10px; display: flex; flex-direction: column; gap: 16px;">
             
             <div class="help-section">
@@ -181,7 +221,7 @@
             <div class="help-section">
                 <h4 style="color: var(--accent-green, #10b981); margin-bottom: 4px;">📅 Календарь и фильтрация</h4>
                 <ul style="color: #e2e8f0; font-size: 0.88rem; margin: 0; padding-left: 20px;">
-                    <li><b>Подсветка смен:</b> нажмите на имя сотрудника в блоке <b>«👥 Сотрудники»</b> справа — все его дежурства на календаре подстветятся ярким цветом, а в аналитике рассчитаются его часы. Повторный клик сбрасывает фильтр.</li>
+                    <li><b>Подсветка смен:</b> нажмите на имя сотрудника в блоке <b>«👥 Сотрудники»</b> справа — все его дежурства на календаре подсветятся ярким цветом, а в аналитике рассчитаются его часы. Повторный клик сбрасывает фильтр.</li>
                     <li><b>Обозначения:</b> 👤 — дежурный сотрудник, 🎂 — день рождения, зеленая рамка — текущий день.</li>
                     <li><b>Навигация:</b> кнопки <b>«← Пред»</b> и <b>«След →»</b> переключают месяцы, а <b>«Сегодня»</b> быстро возвращает к текущей дате.</li>
                 </ul>
@@ -194,7 +234,7 @@
 
         </div>
 
-        <!-- Нижняя панель: Чекбокс + Кнопка -->
+        <!-- Нижняя панель: Чекбокс запоминания выбора и кнопка закрытия -->
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
             <label style="display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; cursor: pointer; user-select: none;">
                 <input type="checkbox" id="dont-show-help-again" style="accent-color: var(--accent-green, #10b981); width: 16px; height: 16px; cursor: pointer;">
@@ -207,7 +247,7 @@
     </div>
 </div>
 
-<!-- Подключаем скрипт логики -->
+<!-- Подключение главного скрипта приложения -->
 <script src="app.js"></script>
 </body>
 </html>
