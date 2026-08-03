@@ -19,14 +19,15 @@
    1. CSS VARIABLES (ПЕРЕМЕННЫЕ ТЕМЫ)
    ========================================================================== */
 :root {
-    --bg-color: #0a0c10;
-    --panel-color: #12161f;
-    --panel-border: rgba(0, 255, 136, 0.15);
+    --bg-color: #080a0f;
+    --panel-color: rgba(18, 22, 31, 0.55);
+    --panel-border: rgba(0, 255, 136, 0.18);
+    --glass-border-light: rgba(255, 255, 255, 0.08);
     --accent-green: #00ff88;
     --accent-glow: rgba(0, 255, 136, 0.35);
     --text-main: #f0f4f8;
     --text-dim: #8a99ad;
-    --weekend-bg: rgba(255, 255, 255, 0.02);
+    --weekend-bg: rgba(255, 255, 255, 0.015);
     --weekend-color: #ff6b6b;
     --danger: #ff5252;
     --cake-color: #ffb703;
@@ -47,6 +48,20 @@
 
 body {
     background-color: var(--bg-color);
+    background-image: 
+        /* Зеленый отблеск в левом верхнем углу */
+        radial-gradient(circle at 0% 0%, rgba(0, 255, 136, 0.15) 0%, transparent 50%),
+        
+        /* Синий отблеск в правом нижнем углу */
+        radial-gradient(circle at 100% 100%, rgba(76, 201, 240, 0.18) 0%, transparent 50%),
+
+        /* Подсветка блока Аналитики */
+        radial-gradient(circle at 85% 20%, rgba(0, 255, 136, 0.08) 0%, transparent 35%),
+        
+        /* Диагональный фоновый перелив */
+        linear-gradient(135deg, rgba(0, 255, 136, 0.03) 0%, rgba(76, 201, 240, 0.03) 100%);
+        
+    background-attachment: fixed;
     color: var(--text-main);
     min-height: 100vh;
     padding: 20px;
@@ -60,10 +75,10 @@ body {
 /* Для Firefox */
 html, body, * {
     scrollbar-width: thin !important;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
+    scrollbar-color: rgba(0, 255, 136, 0.3) transparent !important;
 }
 
-/* Для браузеров на движке WebKit (Chrome, Safari, Edge, Opera) */
+/* Для WebKit (Chrome, Safari, Edge, Opera) */
 ::-webkit-scrollbar {
     width: 6px !important;
     height: 6px !important;
@@ -75,14 +90,14 @@ html, body, * {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
     border-radius: 10px !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #00ff88 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.35) !important;
+    background: var(--accent-green) !important;
+    box-shadow: 0 0 10px var(--accent-glow) !important;
 }
 
 ::-webkit-scrollbar-button {
@@ -111,16 +126,17 @@ html, body, * {
 .glass-panel {
     background: var(--panel-color);
     border: 1px solid var(--panel-border);
-    border-radius: 18px;
+    border-radius: 20px;
     padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     transition: var(--transition-smooth);
 }
 
 .glass-panel:hover {
-    border-color: rgba(0, 255, 136, 0.3);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 255, 136, 0.05);
+    border-color: rgba(0, 255, 136, 0.35);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 136, 0.08);
 }
 
 .main-section {
@@ -158,18 +174,19 @@ html, body, * {
 
 .nav-btns {
     display: flex;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.3);
     padding: 4px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border-light);
+    backdrop-filter: blur(10px);
     gap: 4px;
 }
 
 .nav-btn {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     color: #fff;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -183,7 +200,7 @@ html, body, * {
     border-color: var(--accent-green);
     color: var(--accent-green);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
 }
 
 .nav-btn:active {
@@ -194,7 +211,7 @@ html, body, * {
     background: rgba(0, 255, 136, 0.2);
     border-color: var(--accent-green);
     color: var(--accent-green);
-    box-shadow: 0 0 10px var(--accent-glow);
+    box-shadow: 0 0 12px var(--accent-glow);
 }
 
 /* ==========================================================================
@@ -218,9 +235,9 @@ html, body, * {
 .weekday.weekend { color: var(--weekend-color); }
 
 .day-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--glass-border-light);
+    border-radius: 14px;
     min-height: 95px;
     padding: 8px;
     display: flex;
@@ -228,14 +245,16 @@ html, body, * {
     gap: 6px;
     position: relative;
     cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: var(--transition-fast);
 }
 
 .day-card:hover {
     border-color: rgba(0, 255, 136, 0.5);
-    transform: translateY(-4px) scale(1.02);
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 255, 136, 0.1);
+    transform: translateY(-3px) scale(1.01);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 136, 0.15);
     z-index: 2;
 }
 
@@ -245,7 +264,7 @@ html, body, * {
 .day-card.is-today {
     border: 2px solid var(--accent-green) !important;
     background: rgba(0, 255, 136, 0.08) !important;
-    box-shadow: 0 0 15px var(--accent-glow) !important;
+    box-shadow: 0 0 20px var(--accent-glow) !important;
 }
 
 .day-card.is-today .day-number {
@@ -274,21 +293,22 @@ html, body, * {
 .day-card:hover .day-number { color: #fff; }
 
 .duty-tag {
-    background: rgba(0, 255, 136, 0.1);
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.25);
     color: var(--accent-green);
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.8rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    backdrop-filter: blur(4px);
     transition: var(--transition-fast);
 }
 
 .day-card:hover .duty-tag {
     border-color: var(--accent-green);
-    box-shadow: 0 0 8px var(--accent-glow);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* Акцентная подсветка смены при фильтре */
@@ -306,8 +326,9 @@ html, body, * {
     color: var(--cake-color);
     font-size: 0.7rem;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 6px;
     margin-top: auto;
+    backdrop-filter: blur(4px);
     transition: var(--transition-fast);
     animation: pulseGlow 3s infinite ease-in-out;
 }
@@ -373,17 +394,18 @@ html, body, * {
 }
 
 .stat-card {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border-light);
     padding: 12px;
     border-radius: 12px;
+    backdrop-filter: blur(6px);
     transition: var(--transition-fast);
 }
 
 .stat-card:hover {
-    border-color: rgba(0, 255, 136, 0.2);
+    border-color: rgba(0, 255, 136, 0.3);
     transform: translateY(-2px);
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 255, 136, 0.04);
 }
 
 .stat-card.full-width {
@@ -423,14 +445,15 @@ html, body, * {
 .events-list { max-height: 160px; }
 
 .staff-item, .info-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--glass-border-light);
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.8rem;
+    backdrop-filter: blur(6px);
     transition: var(--transition-fast);
     width: 100%;
 }
@@ -482,14 +505,14 @@ html, body, * {
 
 .staff-item:hover, .info-card:hover {
     border-color: rgba(0, 255, 136, 0.3);
-    background: rgba(0, 255, 136, 0.04);
+    background: rgba(0, 255, 136, 0.05);
     transform: translateX(3px);
 }
 
 .staff-item.active {
     border-color: var(--accent-green);
     background: rgba(0, 255, 136, 0.12);
-    box-shadow: inset 3px 0 0 var(--accent-green);
+    box-shadow: inset 3px 0 0 var(--accent-green), 0 0 10px var(--accent-glow);
 }
 
 .info-card.vacation { border-left: 3px solid var(--vacation-color); }
@@ -499,7 +522,7 @@ html, body, * {
     color: var(--text-dim);
     font-weight: bold;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     transition: var(--transition-fast);
 }
@@ -507,7 +530,7 @@ html, body, * {
 .delete-btn:hover { 
     color: var(--danger); 
     background: rgba(255, 82, 82, 0.15);
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 /* ==========================================================================
@@ -515,19 +538,20 @@ html, body, * {
    ========================================================================== */
 input[type="text"], input[type="date"], select {
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--panel-border);
+    border: 1px solid var(--glass-border-light);
     color: #fff;
-    padding: 8px 10px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
     outline: none;
     width: 100%;
     font-size: 0.8rem;
+    backdrop-filter: blur(6px);
     transition: var(--transition-fast);
 }
 
 input[type="text"]:focus, input[type="date"]:focus, select:focus {
     border-color: var(--accent-green);
-    box-shadow: 0 0 10px var(--accent-glow);
+    box-shadow: 0 0 12px var(--accent-glow);
     background: rgba(0, 0, 0, 0.6);
 }
 
@@ -536,16 +560,17 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     color: #000;
     border: none;
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.85rem;
+    box-shadow: 0 4px 12px var(--accent-glow);
     transition: var(--transition-fast);
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--accent-glow);
+    box-shadow: 0 6px 18px var(--accent-glow);
     filter: brightness(1.1);
 }
 
@@ -555,6 +580,7 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     background: rgba(255, 82, 82, 0.15);
     color: var(--danger);
     border: 1px solid var(--danger);
+    box-shadow: none;
 }
 
 .btn.danger-btn:hover {
@@ -576,12 +602,12 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 .add-form.active { display: flex; }
 
 .icon-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border-light);
     color: var(--accent-green);
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -589,14 +615,15 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     font-size: 1rem;
     line-height: 1;
     padding: 0;
+    backdrop-filter: blur(4px);
     transition: var(--transition-fast);
 }
 
 .icon-btn:hover {
     background: var(--accent-green);
     color: #000;
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 0 10px var(--accent-glow);
+    transform: rotate(90deg) scale(1.08);
+    box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .icon-btn.active {
@@ -619,8 +646,9 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: none;
     justify-content: center;
     align-items: center;
@@ -635,12 +663,14 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     background: var(--panel-color);
     border: 1px solid var(--panel-border);
     padding: 24px;
-    border-radius: 16px;
+    border-radius: 20px;
     width: 320px;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0, 255, 136, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     transform: scale(0.8);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -652,8 +682,8 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     padding: 10px 14px;
     margin-top: 8px;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
+    border: 1px solid var(--glass-border-light);
+    border-radius: 10px;
     color: #fff;
     font-size: 0.9rem;
     outline: none;
@@ -801,12 +831,13 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     align-items: center;
     gap: 6px;
     background: rgba(0, 255, 136, 0.08);
-    border: 1px solid rgba(0, 255, 136, 0.2);
+    border: 1px solid rgba(0, 255, 136, 0.25);
     color: var(--accent-green);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.7rem;
     margin-left: 8px;
+    backdrop-filter: blur(4px);
 }
 
 .status-dot {
@@ -866,7 +897,7 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 
     .calendar-grid {
         grid-template-columns: repeat(7, 1fr) !important;
-        gap: 2px;
+        gap: 4px;
     }
 
     .weekday {
@@ -876,7 +907,8 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 
     .day-card {
         min-height: 52px;
-        padding: 2px;
+        padding: 4px;
+        border-radius: 10px;
     }
 
     .day-number {
@@ -885,7 +917,7 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
 
     .duty-tag {
         font-size: 9px;
-        padding: 1px 2px;
+        padding: 2px 4px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
