@@ -19,6 +19,15 @@ const monthsRuGenitive = ["января", "февраля", "марта", "ап�
 // Структурированный чейнджлог приложения
 const CHANGELOG_DATA = [
     {
+        version: "v1.1.3",
+        date: "Август 2026",
+        changes: [
+            { type: "new", text: "Добавлена поддержка отображения новой версии в чейнджлоге." },
+            { type: "upd", text: "Оптимизация интерфейса и мелкие улучшения производительности." },
+            { type: "fix", text: "Исправлены незначительные ошибки верстки и отображения данных." }
+        ]
+    },
+    {
         version: "v1.1.0",
         date: "Август 2026",
         changes: [
@@ -588,6 +597,47 @@ function closeChangelogModal() {
     modal.classList.remove('active');
     setTimeout(() => modal.style.display = 'none', 300);
 }
+
+// Открытие модального окна Справки
+function openHelpModal(e) {
+    if (e) e.preventDefault();
+    const modal = document.getElementById('help-modal');
+    if (!modal) return;
+    
+    // При ручном вызове из футера галочку снимаем
+    const checkbox = document.getElementById('dont-show-help-again');
+    if (checkbox) checkbox.checked = false;
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+// Закрытие модального окна Справки с сохранением выбора
+function closeHelpModal() {
+    const modal = document.getElementById('help-modal');
+    if (!modal) return;
+    
+    const checkbox = document.getElementById('dont-show-help-again');
+    if (checkbox && checkbox.checked) {
+        localStorage.setItem('ipm_roster_hide_help', 'true');
+    }
+
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Автооткрытие при первой загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const hideHelp = localStorage.getItem('ipm_roster_hide_help');
+    
+    // Если пользователь НЕ ставил галочку "Больше не показывать"
+    if (!hideHelp) {
+        // Небольшая задержка для плавности появления при старте
+        setTimeout(() => {
+            openHelpModal();
+        }, 400);
+    }
+});
 
 // Запуск инициализации приложения
 init();
