@@ -107,8 +107,8 @@
             </span>
         </div>
         <div class="footer-links">
-            <a href="#" class="footer-link" onclick="openChangelogModal(event)">v1.1.0</a>
-            <a href="#" class="footer-link" onclick="event.preventDefault();">Справка</a>
+            <a href="#" class="footer-link" onclick="openChangelogModal(event)">v1.1.3</a>
+            <a href="#" class="footer-link" onclick="openHelpModal(event)">Справка</a>
         </div>
     </footer>
 </div>
@@ -143,12 +143,67 @@
     <div class="modal changelog-modal-content">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="font-size: 1.1rem; color: #fff;">История обновлений</h3>
-            <span class="version-tag">v1.1.0</span>
+            <span class="version-tag">v1.1.3</span>
         </div>
         <div class="changelog-body" id="changelog-body">
             <!-- JS подгрузит детали релиза -->
         </div>
         <button class="btn" style="width:100%; margin-top: 10px;" onclick="closeChangelogModal()">Закрыть</button>
+    </div>
+</div>
+
+<!-- Модальное окно Справки -->
+<div class="modal-overlay" id="help-modal">
+    <div class="modal" style="width: 700px !important; max-width: 90vw !important; max-height: 85vh !important; display: flex !important; flex-direction: column !important; padding: 24px !important;">
+        
+        <!-- Шапка -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 1.2rem; color: #fff; margin: 0;">📖 Справка и руководство</h3>
+            <span class="version-tag">IPM Roster</span>
+        </div>
+
+        <!-- Контент с прокруткой -->
+        <div class="help-body" style="flex: 1; overflow-y: auto !important; padding-right: 10px; display: flex; flex-direction: column; gap: 16px;">
+            
+            <div class="help-section">
+                <h4 style="color: var(--accent-green, #10b981); margin-bottom: 4px;">🚀 О системе</h4>
+                <p style="color: #e2e8f0; font-size: 0.9rem; margin: 0;"><b>IPM Roster</b> — система для удобного просмотра, планирования и учета дежурств, отпусков и дней рождения сотрудников.</p>
+            </div>
+
+            <div class="help-section">
+                <h4 style="color: var(--accent-green, #10b981); margin-bottom: 4px;">🔑 Режимы доступа</h4>
+                <ul style="color: #e2e8f0; font-size: 0.88rem; margin: 0; padding-left: 20px;">
+                    <li><b>Режим Гостя:</b> просмотр актуального графика, списка отпусков, фильтрация смен и аналитика переработок.</li>
+                    <li><b>Режим Администратора:</b> переключение по кнопке <b>«🔑 Вход»</b> (требуется пароль). Позволяет назначать/снимать дежурства, добавлять отпуска, дни рождения и управлять списком сотрудников.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h4 style="color: var(--accent-green, #10b981); margin-bottom: 4px;">📅 Календарь и фильтрация</h4>
+                <ul style="color: #e2e8f0; font-size: 0.88rem; margin: 0; padding-left: 20px;">
+                    <li><b>Подсветка смен:</b> нажмите на имя сотрудника в блоке <b>«👥 Сотрудники»</b> справа — все его дежурства на календаре подстветятся ярким цветом, а в аналитике рассчитаются его часы. Повторный клик сбрасывает фильтр.</li>
+                    <li><b>Обозначения:</b> 👤 — дежурный сотрудник, 🎂 — день рождения, зеленая рамка — текущий день.</li>
+                    <li><b>Навигация:</b> кнопки <b>«← Пред»</b> и <b>«След →»</b> переключают месяцы, а <b>«Сегодня»</b> быстро возвращает к текущей дате.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h4 style="color: var(--accent-green, #10b981); margin-bottom: 4px;">📊 Аналитика</h4>
+                <p style="color: #e2e8f0; font-size: 0.9rem; margin: 0;">Блок рассчитывает количество смен выбранного сотрудника за месяц/год и автоматически суммирует часы переработок с учетом повышенного коэффициента для выходных и праздничных дней.</p>
+            </div>
+
+        </div>
+
+        <!-- Нижняя панель: Чекбокс + Кнопка -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="dont-show-help-again" style="accent-color: var(--accent-green, #10b981); width: 16px; height: 16px; cursor: pointer;">
+                Больше не показывать при входе
+            </label>
+
+            <button class="btn" style="width: 100%;" onclick="closeHelpModal()">Закрыть</button>
+        </div>
+
     </div>
 </div>
 
