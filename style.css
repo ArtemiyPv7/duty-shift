@@ -1,3 +1,23 @@
+/* ==========================================================================
+   TABLE OF CONTENTS / ОГЛАВЛЕНИЕ
+   1. CSS Variables (Переменные темы)
+   2. Global Reset & Base Styles (Базовые стили)
+   3. Custom Scrollbar (Кастомный скроллбар)
+   4. App Layout (Сетка приложения)
+   5. Header & Controls (Шапка и кнопки навигации)
+   6. Calendar Grid (Сетка календаря и карточки дней)
+   7. Sidebar & Glass Panels (Боковая панель)
+   8. Stats & Analytics (Аналитика и карточки)
+   9. Interactive Lists & Staff Items (Списки сотрудников и событий)
+   10. Forms, Inputs & Buttons (Формы, поля ввода и кнопки)
+   11. Modal Windows (Модальные окна, Чейнджлог и Справка)
+   12. Footer (Подвал приложения)
+   13. Responsive Design (Мобильная адаптивность)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. CSS VARIABLES (ПЕРЕМЕННЫЕ ТЕМЫ)
+   ========================================================================== */
 :root {
     --bg-color: #0a0c10;
     --panel-color: #12161f;
@@ -15,17 +35,35 @@
     --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==========================================
-   ГЛОБАЛЬНАЯ СТИЛИЗАЦИЯ СКРОЛЛБАРА ДЛЯ ВСЕГО САЙТА
-   ========================================== */
+/* ==========================================================================
+   2. GLOBAL RESET & BASE STYLES
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
 
-/* 1. Стандартное правило (для современных браузеров и Firefox) */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   3. CUSTOM SCROLLBAR (КАСТОМНЫЙ СКРОЛЛБАР)
+   ========================================================================== */
+/* Для Firefox */
 html, body, * {
     scrollbar-width: thin !important;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
 }
 
-/* 2. Для браузеров на движке Blink (Chrome, Яндекс, Edge, Opera) */
+/* Для браузеров на движке WebKit (Chrome, Safari, Edge, Opera) */
 ::-webkit-scrollbar {
     width: 6px !important;
     height: 6px !important;
@@ -43,11 +81,10 @@ html, body, * {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #00ff88 !important; /* Наш неоново-зеленый */
+    background: #00ff88 !important;
     box-shadow: 0 0 10px rgba(0, 255, 136, 0.35) !important;
 }
 
-/* Полностью отключаем системные стрелочки скроллбара */
 ::-webkit-scrollbar-button {
     display: none !important;
     width: 0 !important;
@@ -58,22 +95,9 @@ html, body, * {
     background: transparent !important;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-}
-
-body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    min-height: 100vh;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-}
-
+/* ==========================================================================
+   4. APP LAYOUT (ОБЩАЯ СЕТКА)
+   ========================================================================== */
 .app-container {
     width: 100%;
     max-width: 1450px;
@@ -105,6 +129,9 @@ body {
     gap: 15px;
 }
 
+/* ==========================================================================
+   5. HEADER & CONTROLS (ШАПКА И НАВИГАЦИЯ)
+   ========================================================================== */
 .header-controls {
     display: flex;
     justify-content: space-between;
@@ -163,6 +190,16 @@ body {
     transform: translateY(0);
 }
 
+.nav-btn.active-auth {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* ==========================================================================
+   6. CALENDAR GRID (СЕТКА КАЛЕНДАРЯ)
+   ========================================================================== */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -204,6 +241,23 @@ body {
 
 .day-card.is-weekend { background: var(--weekend-bg); }
 
+/* Выделение текущего дня */
+.day-card.is-today {
+    border: 2px solid var(--accent-green) !important;
+    background: rgba(0, 255, 136, 0.08) !important;
+    box-shadow: 0 0 15px var(--accent-glow) !important;
+}
+
+.day-card.is-today .day-number {
+    color: var(--accent-green);
+    font-weight: 800;
+}
+
+.day-card.is-today .duty-tag {
+    background: rgba(0, 255, 136, 0.2);
+    font-weight: 600;
+}
+
 .day-header {
     display: flex;
     justify-content: space-between;
@@ -217,9 +271,7 @@ body {
     transition: var(--transition-fast);
 }
 
-.day-card:hover .day-number {
-    color: #fff;
-}
+.day-card:hover .day-number { color: #fff; }
 
 .duty-tag {
     background: rgba(0, 255, 136, 0.1);
@@ -239,6 +291,7 @@ body {
     box-shadow: 0 0 8px var(--accent-glow);
 }
 
+/* Акцентная подсветка смены при фильтре */
 .duty-tag.highlighted {
     background: var(--accent-green) !important;
     color: #000 !important;
@@ -259,6 +312,9 @@ body {
     animation: pulseGlow 3s infinite ease-in-out;
 }
 
+/* ==========================================================================
+   7. SIDEBAR & PANELS (БОКОВАЯ ПАНЕЛЬ)
+   ========================================================================== */
 .sidebar { 
     display: flex; 
     flex-direction: column; 
@@ -307,6 +363,9 @@ body {
     display: none;
 }
 
+/* ==========================================================================
+   8. STATS & ANALYTICS (АНАЛИТИКА)
+   ========================================================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -341,29 +400,27 @@ body {
     transition: var(--transition-fast);
 }
 
-.stat-label { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 2px; }
+.stat-label { 
+    font-size: 0.7rem; 
+    color: var(--text-dim); 
+    margin-bottom: 2px; 
+}
 
-.staff-list {
+/* ==========================================================================
+   9. INTERACTIVE LISTS & STAFF ITEMS
+   ========================================================================== */
+.staff-list, .events-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     margin-top: 8px;
     padding-right: 4px;
 }
 
-.events-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 160px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin-top: 8px;
-    padding-right: 4px;
-}
+.staff-list { flex: 1; }
+.events-list { max-height: 160px; }
 
 .staff-item, .info-card {
     background: rgba(255, 255, 255, 0.02);
@@ -378,7 +435,50 @@ body {
     width: 100%;
 }
 
-.staff-item { cursor: pointer; }
+.staff-item { 
+    cursor: pointer;
+    position: relative;
+    height: 38px;
+}
+
+.staff-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.staff-name {
+    white-space: nowrap;
+    transition: var(--transition-fast);
+}
+
+.staff-action-hint {
+    font-size: 0.7rem;
+    color: var(--accent-green);
+    opacity: 0;
+    transform: translateX(8px);
+    transition: var(--transition-fast);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.staff-item:hover .staff-action-hint {
+    opacity: 0.85;
+    transform: translateX(0);
+}
+
+.staff-item.active .staff-action-hint {
+    color: var(--danger);
+    opacity: 0.7;
+}
+
+.staff-item.active:hover .staff-action-hint {
+    opacity: 1;
+}
 
 .staff-item:hover, .info-card:hover {
     border-color: rgba(0, 255, 136, 0.3);
@@ -391,6 +491,9 @@ body {
     background: rgba(0, 255, 136, 0.12);
     box-shadow: inset 3px 0 0 var(--accent-green);
 }
+
+.info-card.vacation { border-left: 3px solid var(--vacation-color); }
+.info-card.bday { border-left: 3px solid var(--cake-color); }
 
 .delete-btn {
     color: var(--text-dim);
@@ -407,9 +510,9 @@ body {
     transform: scale(1.2);
 }
 
-.info-card.vacation { border-left: 3px solid var(--vacation-color); }
-.info-card.bday { border-left: 3px solid var(--cake-color); }
-
+/* ==========================================================================
+   10. FORMS, INPUTS & BUTTONS
+   ========================================================================== */
 input[type="text"], input[type="date"], select {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--panel-border);
@@ -446,9 +549,7 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     filter: brightness(1.1);
 }
 
-.btn:active {
-    transform: translateY(0);
-}
+.btn:active { transform: translateY(0); }
 
 .btn.danger-btn {
     background: rgba(255, 82, 82, 0.15);
@@ -468,13 +569,11 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     gap: 6px;
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     animation: slideDown 0.3s ease-out;
 }
 
-.add-form.active {
-    display: flex;
-}
+.add-form.active { display: flex; }
 
 .icon-btn {
     background: rgba(255, 255, 255, 0.05);
@@ -514,6 +613,9 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     box-shadow: 0 0 10px rgba(255, 82, 82, 0.4);
 }
 
+/* ==========================================================================
+   11. MODAL WINDOWS (МОДАЛЬНЫЕ ОКНА)
+   ========================================================================== */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -527,9 +629,7 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     transition: opacity 0.3s ease;
 }
 
-.modal-overlay.active {
-    opacity: 1;
-}
+.modal-overlay.active { opacity: 1; }
 
 .modal {
     background: var(--panel-color);
@@ -545,11 +645,8 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.modal-overlay.active .modal {
-    transform: scale(1);
-}
+.modal-overlay.active .modal { transform: scale(1); }
 
-/* Стилизация поля ввода пароля авторизации */
 #auth-password-input {
     width: 100%;
     padding: 10px 14px;
@@ -574,51 +671,93 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     background: rgba(0, 0, 0, 0.6);
 }
 
-#auth-password-input::placeholder {
-    color: var(--text-dim);
+/* Модальное окно Чейнджлога */
+.changelog-modal-content {
+    width: 440px !important;
+    max-width: 90vw;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.changelog-body {
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
 }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+.changelog-version-block {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 12px;
 }
 
-@keyframes pulseGlow {
-    0%, 100% { box-shadow: 0 0 0 rgba(255, 183, 3, 0); }
-    50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
+.changelog-version-block:last-child { border-bottom: none; }
+.changelog-date { font-size: 0.75rem; color: var(--text-dim); }
+
+.changelog-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-/* Стиль для активной кнопки входа */
-.nav-btn.active-auth {
-    background: rgba(0, 255, 136, 0.2);
-    border-color: var(--accent-green);
-    color: var(--accent-green);
-    box-shadow: 0 0 10px var(--accent-glow);
+.changelog-item {
+    font-size: 0.8rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.3;
 }
 
-/* Стили для подсвечивания текущего дня */
-.day-card.is-today {
-    border: 2px solid var(--accent-green) !important;
-    background: rgba(0, 255, 136, 0.08) !important;
-    box-shadow: 0 0 15px var(--accent-glow) !important;
+.changelog-type {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 1px;
 }
 
-.day-card.is-today .day-number {
-    color: var(--accent-green);
-    font-weight: 800;
+.type-new { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+.type-fix { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
+.type-upd { background: rgba(76, 201, 240, 0.15); color: var(--vacation-color); }
+
+/* Модальное окно Справки */
+.help-modal-content {
+    width: 680px !important;
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-.day-card.is-today .duty-tag {
-    background: rgba(0, 255, 136, 0.2);
-    font-weight: 600;
+.help-body {
+    flex: 1;
+    overflow-y: auto !important;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 12px;
 }
 
-/* Стили подвала (Footer) */
+.help-section {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 12px;
+}
+
+.help-section:last-child { border-bottom: none; padding-bottom: 0; }
+.help-section h4 { color: var(--accent-green); font-size: 0.95rem; margin-bottom: 6px; }
+.help-section p, .help-section li { font-size: 0.85rem; color: var(--text-main); line-height: 1.45; }
+.help-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.help-section b { color: #fff; }
+
+/* ==========================================================================
+   12. FOOTER (ПОДВАЛ)
+   ========================================================================== */
 .app-footer {
     grid-column: 1 / -1;
     width: 100%;
@@ -657,7 +796,6 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     text-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* Элементы модалки Чейнджлога */
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -680,16 +818,6 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     animation: pulseDot 2s infinite;
 }
 
-@keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-.changelog-modal-content {
-    width: 440px !important;
-    max-width: 90vw;
-}
-
 .version-tag {
     background: rgba(0, 255, 136, 0.12);
     border: 1px solid rgba(0, 255, 136, 0.3);
@@ -700,61 +828,32 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     font-weight: 600;
 }
 
-.changelog-body {
-    max-height: 340px;
-    overflow-y: auto;
-    padding-right: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 8px;
+/* ==========================================================================
+   KEYFRAME ANIMATIONS (АНИМАЦИИ)
+   ========================================================================== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.changelog-version-block {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 12px;
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.changelog-version-block:last-child {
-    border-bottom: none;
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 183, 3, 0); }
+    50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
 }
 
-.changelog-date {
-    font-size: 0.75rem;
-    color: var(--text-dim);
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-.changelog-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.changelog-item {
-    font-size: 0.8rem;
-    color: var(--text-main);
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    line-height: 1.3;
-}
-
-.changelog-type {
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-weight: 700;
-    text-transform: uppercase;
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-.type-new { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
-.type-fix { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
-.type-upd { background: rgba(76, 201, 240, 0.15); color: var(--vacation-color); }
-
-/* Мобильная адаптивность */
+/* ==========================================================================
+   13. RESPONSIVE DESIGN (МОБИЛЬНАЯ АДАПТИВНОСТЬ)
+   ========================================================================== */
 @media (max-width: 768px) {
     body {
         padding: 8px;
@@ -765,11 +864,6 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
         gap: 12px;
     }
 
-    .main-content {
-        padding: 10px;
-    }
-
-    /* Жестко фиксируем 7 колонок для дней недели, чтобы они не уходили за экран */
     .calendar-grid {
         grid-template-columns: repeat(7, 1fr) !important;
         gap: 2px;
@@ -801,104 +895,4 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
         padding: 12px 4px 4px 4px;
         font-size: 0.75rem;
     }
-
-    /* --- Интерактивная подсказка фильтрации сотрудников --- */
-.staff-item {
-    position: relative;
-    padding: 0 12px;
-    height: 38px;
-}
-
-.staff-info {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 100%;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.staff-name {
-    white-space: nowrap;
-    transition: var(--transition-fast);
-}
-
-.staff-action-hint {
-    font-size: 0.7rem;
-    color: var(--accent-green);
-    opacity: 0;
-    transform: translateX(8px);
-    transition: var(--transition-fast);
-    pointer-events: none;
-    white-space: nowrap;
-}
-
-/* Эффекты при наведении */
-.staff-item:hover .staff-action-hint {
-    opacity: 0.85;
-    transform: translateX(0);
-}
-
-.staff-item.active .staff-action-hint {
-    color: var(--danger);
-    opacity: 0.7;
-}
-
-.staff-item.active:hover .staff-action-hint {
-    opacity: 1;
-}
-
-/* Исправленные стили модального окна Справки */
-.help-modal-content {
-    width: 680px !important;       /* Увеличили ширину, чтобы текст свободно дышал */
-    max-width: 90vw !important;     /* Ограничение для небольших экранов */
-    max-height: 85vh !important;    /* Не дает окну вылезать за пределы экрана по высоте */
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-.help-body {
-    flex: 1;                        /* Занимает всё доступное место */
-    overflow-y: auto !important;    /* Внутренний скролл, если текста много */
-    padding-right: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 12px;
-}
-
-.help-section {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 12px;
-}
-
-.help-section:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.help-section h4 {
-    color: var(--accent-green);
-    font-size: 0.95rem;
-    margin-bottom: 6px;
-}
-
-.help-section p, .help-section li {
-    font-size: 0.85rem;
-    color: var(--text-main);
-    line-height: 1.45;
-}
-
-.help-section ul {
-    padding-left: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.help-section b {
-    color: #fff;
-}
-
 }
