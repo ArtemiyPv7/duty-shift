@@ -1,212 +1,310 @@
 /* ==========================================================================
-   TABLE OF CONTENTS / ОГЛАВЛЕНИЕ
-   1. Configuration & Supabase Init (Инициализация и константы)
-   2. Application State (Глобальное состояние)
-   3. Changelog & Help Data (Данные версий и справки)
-   4. Supabase API Service (Загрузка и синхронизация)
-   5. App Lifecycle & Initialization (Точка входа и инициализация)
-   6. Authentication System (Система авторизации)
-   7. Navigation & Date Helpers (Форматирование дат и навигация)
-   8. Events: Vacations & Birthdays (Отпуска и Дни рождения)
-   9. Calendar Rendering (Отрисовка сетки календаря и смен)
-   10. Shift Modal Controller (Модальное окно редактирования смен)
-   11. Staff Management (Управление сотрудниками)
-   12. Analytics & Overtime Engine (Расчет переработок и статистики)
-   13. Changelog & Help Modals (Модальные окна Справки и Чейнджлога)
-   ========================================================================== */
+TABLE OF CONTENTS / ОГЛАВЛЕНИЕ
+Configuration & Supabase Init (Инициализация и константы)
+Application State (Глобальное состояние)
+Changelog & Help Data (Данные версий и справки)
+Toast Notifications (Пользовательские уведомления)
+Supabase API Service (Загрузка и синхронизация)
+App Lifecycle & Initialization (Точка входа)
+Authentication System (Система авторизации)
+Navigation & Date Helpers (Форматирование дат и навигация)
+Events: Vacations & Birthdays (Отпуска и дни рождения)
+Calendar Rendering (Отрисовка сетки календаря и смен)
+Shift Modal Controller (Модальное окно редактирования смен)
+Staff Management (Управление сотрудниками)
+Analytics & Overtime Engine (Расчет переработок и статистики)
+Changelog & Help Modals (Модальные окна справки и чейнджлога)
+Modal Utilities (Общие механизмы открытия/закрытия модалок)
+Security Helpers (Экранирование)
+Global Handlers (Закрытие модалок, клавиатура)
+DOM Ready & Init Trigger
+========================================================================== */
 
 /* ==========================================================================
-   1. CONFIGURATION & SUPABASE INIT
-   ========================================================================== */
+CONFIGURATION & SUPABASE INIT (ИНИЦИАЛИЗАЦИЯ И КОНСТАНТЫ)
+ПРИМЕЧАНИЕ: URL и ключ намеренно хранятся в клиентском коде — сервис
+является внутренним инструментом и используется только своей командой.
+========================================================================== */
 const SUPABASE_URL = 'https://fxdzzmgxsakmxymjnefd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Zug-QaFA6stMJ_XQuvOoUw_ZqwgUXTH';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Пароль для доступа к функциям администратора
+let supabaseClient = null;
+try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch (err) {
+    console.error('Не удалось инициализировать Supabase-клиент:', err);
+}
+
+// Пароль для доступа к функциям администратора (только для внутреннего использования)
 const ADMIN_PASSWORD = '123';
 
 /* ==========================================================================
-   2. APPLICATION STATE (ГЛОБАЛЬНОЕ СОСТОЯНИЕ)
-   ========================================================================== */
-let isAdminLoggedIn = false; // Флаг прав администратора
-let currentDate = new Date(); // Отображаемый месяц/год в календаре
-let selectedStaff = null; // Выбранный сотрудник для фильтрации
-let activeEditDate = null; // Дата, редактируемая в модальном окне
+2. APPLICATION STATE (ГЛОБАЛЬНОЕ СОСТОЯНИЕ)
+========================================================================== */
+let isAdminLoggedIn = false;     // Флаг прав администратора
+let currentDate = new Date();    // Отображаемый месяц/год в календаре
+let selectedStaff = null;        // Выбранный сотрудник для фильтрации
+let activeEditDate = null;       // Дата, редактируемая в модальном окне
+let isRequestInProgress = false; // Защита от дублирующих/параллельных запросов
+let lastFocusedElement = null;   // Для возврата фокуса после закрытия модалки
 
 // Локальный кэш данных из Supabase
 let birthdays = {};
 let vacations = [];
 let staff = [];
-let shifts = {};
+// v1.2.0: смена хранится как объект { person, overtime } вместо строки
+let shifts = {}; // { 'YYYY-MM-DD': { person: string, overtime: number } }
 
 /* ==========================================================================
-   3. CHANGELOG & HELP DATA
-   ========================================================================== */
-const monthsRu = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-const monthsRuGenitive = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+3. CHANGELOG & HELP DATA
+========================================================================== */
+const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+const monthsRuGenitive = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 
 const CHANGELOG_DATA = [
-   {
-        version: "v1.1.4",
-        date: "Август 2026",
+    {
+        version: 'v1.2.0',
+        date: 'Август 2026',
         changes: [
-            { type: "new", text: "Обновлено визуальное оформление: глубокий диагональный градиент и мягкое свечение фоновых акцентов." },
-            { type: "upd", text: "Улучшены эффекты стекла (glassmorphism) и акцентная неоновая подсветка текущей даты." },
-            { type: "upd", text: "Оптимизирован фоновый световую ореол над блоком аналитики для лучшей читаемости." }
+            { type: 'new', text: 'В карточке смены добавлено поле «Часы переработки» — значение сохраняется в БД вместе со сменой.' },
+            { type: 'upd', text: 'Аналитика переработок: итог за месяц считается как сумма часов из смен сотрудника вместо авторасчета по дням недели.' },
+            { type: 'upd', text: 'Кнопки «Пред», «Сегодня» и «След» перенесены в заголовок календаря, в шапке осталась только кнопка входа.' },
+            { type: 'upd', text: 'Секции «Отпуска» и «Дни рождения» свернуты по умолчанию и раскрываются по клику.' }
         ]
     },
     {
-        version: "v1.1.3",
-        date: "Август 2026",
+        version: 'v1.1.5',
+        date: 'Август 2026',
         changes: [
-            { type: "new", text: "Добавлена поддержка отображения новой версии в чейнджлоге." },
-            { type: "upd", text: "Оптимизация интерфейса и мелкие улучшения производительности." },
-            { type: "fix", text: "Исправлены незначительные ошибки верстки и отображения данных." }
+            { type: 'fix', text: 'Исправлена XSS-уязвимость: экранирование пользовательского HTML теперь действительно работает.' },
+            { type: 'fix', text: 'Исправлена форма входа администратора: страница больше не перезагружается при отправке пароля.' },
+            { type: 'new', text: 'Добавлены toast-уведомления об ошибках и успешных операциях.' },
+            { type: 'new', text: 'Клавиатурная доступность: календарь, списки и заголовки секций управляются с клавиатуры.' },
+            { type: 'upd', text: 'Обработка ошибок БД, защита от двойных кликов и оптимизация подсчета смен.' }
         ]
     },
     {
-        version: "v1.1.0",
-        date: "Август 2026",
+        version: 'v1.1.4',
+        date: 'Август 2026',
         changes: [
-            { type: "new", text: "Добавлена ролевая модель авторизации (Режим Гостя / Администратора)." },
-            { type: "new", text: "Добавлен статус активности системы и интерактивное модальное окно чейнджлога." },
-            { type: "upd", text: "Скрыты элементы управления добавлением и удалением дежурств для неавторизованных пользователей." },
-            { type: "upd", text: "Расширена аналитическая панель с расчетом ночных и выходных переработок." },
-            { type: "fix", text: "Исправлено корректное отображение диапазонов дат отпусков, пересекающих границу месяцев." }
+            { type: 'new', text: 'Обновлено визуальное оформление: глубокий диагональный градиент и мягкое свечение фоновых акцентов.' },
+            { type: 'upd', text: 'Улучшены эффекты стекла (glassmorphism) и акцентная неоновая подсветка текущей даты.' },
+            { type: 'upd', text: 'Оптимизирован фоновый световой ореол над блоком аналитики для лучшей читаемости.' }
         ]
     },
     {
-        version: "v1.0.0",
-        date: "Август 2026",
+        version: 'v1.1.3',
+        date: 'Август 2026',
         changes: [
-            { type: "new", text: "Первый релиз IPM Roster." },
-            { type: "new", text: "Полная синхронизация графика дежурств с Supabase в реальном времени." },
-            { type: "new", text: "Интерактивный сетчатый календарь с подсветкой текущей даты." },
-            { type: "new", text: "Учет отпусков сотрудников и плашки дней рождения в ячейках календаря." }
+            { type: 'new', text: 'Добавлена поддержка отображения новой версии в чейнджлоге.' },
+            { type: 'upd', text: 'Оптимизация интерфейса и мелкие улучшения производительности.' },
+            { type: 'fix', text: 'Исправлены незначительные ошибки верстки и отображения данных.' }
+        ]
+    },
+    {
+        version: 'v1.1.0',
+        date: 'Август 2026',
+        changes: [
+            { type: 'new', text: 'Добавлена ролевая модель авторизации (Режим Гостя / Администратора).' },
+            { type: 'new', text: 'Добавлен статус активности системы и интерактивное модальное окно чейнджлога.' },
+            { type: 'upd', text: 'Скрыты элементы управления добавлением и удалением дежурств для неавторизованных пользователей.' },
+            { type: 'upd', text: 'Расширена аналитическая панель с расчетом ночных и выходных переработок.' },
+            { type: 'fix', text: 'Исправлено корректное отображение диапазонов дат отпусков, пересекающих границу месяцев.' }
+        ]
+    },
+    {
+        version: 'v1.0.0',
+        date: 'Август 2026',
+        changes: [
+            { type: 'new', text: 'Первый релиз IPM Roster.' },
+            { type: 'new', text: 'Полная синхронизация графика дежурств с Supabase в реальном времени.' },
+            { type: 'new', text: 'Интерактивный сетчатый календарь с подсветкой текущей даты.' },
+            { type: 'new', text: 'Учет отпусков сотрудников и плашки дней рождения в ячейках календаря.' }
         ]
     }
 ];
 
 /* ==========================================================================
-   4. SUPABASE API SERVICE (ЗАГРУЗКА И СИНХРОНИЗАЦИЯ)
-   ========================================================================== */
+4. TOAST NOTIFICATIONS (ПОЛЬЗОВАТЕЛЬСКИЕ УВЕДОМЛЕНИЯ)
+========================================================================== */
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    // Ограничиваем количество одновременных уведомлений
+    while (container.children.length >= 4) {
+        container.removeChild(container.firstChild);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.innerText = message; // innerText — безопасно, HTML не интерпретируется
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('visible'));
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+/* ==========================================================================
+5. SUPABASE API SERVICE (ЗАГРУЗКА И СИНХРОНИЗАЦИЯ)
+========================================================================== */
 /**
- * Параллельная загрузка всех таблиц из БД Supabase
+ * Параллельная загрузка всех таблиц из БД Supabase.
+ * @returns {Promise<boolean>} true — данные загружены успешно
  */
 async function loadDataFromSupabase() {
+    if (!supabaseClient) return false;
     try {
-        const [
-            { data: staffData },
-            { data: shiftsData },
-            { data: vacData },
-            { data: bdayData }
-        ] = await Promise.all([
+        const [staffRes, shiftsRes, vacRes, bdayRes] = await Promise.all([
             supabaseClient.from('staff').select('name'),
-            supabaseClient.from('shifts').select('*'),
-            supabaseClient.from('vacations').select('*'),
+            // v1.2.0: запрашиваем часы переработки вместе со сменами
+            supabaseClient.from('shifts').select('shift_date, staff_name, overtime_hours'),
+            supabaseClient.from('vacations').select(''),
             supabaseClient.from('birthdays').select('*')
         ]);
 
-        if (staffData) staff = staffData.map(item => item.name);
-
-        if (shiftsData) {
-            shifts = {};
-            shiftsData.forEach(s => { shifts[s.shift_date] = s.staff_name; });
+        const firstError = [staffRes.error, shiftsRes.error, vacRes.error, bdayRes.error].find(Boolean);
+        if (firstError) {
+            console.error('Ошибка при загрузке данных из Supabase:', firstError);
+            return false;
         }
 
-        if (vacData) {
-            vacations = vacData.map(v => ({
+        if (staffRes.data) staff = staffRes.data.map(item => item.name);
+        if (shiftsRes.data) {
+            shifts = {};
+            shiftsRes.data.forEach(s => {
+                shifts[s.shift_date] = {
+                    person: s.staff_name,
+                    overtime: parseOvertime(s.overtime_hours)
+                };
+            });
+        }
+        if (vacRes.data) {
+            vacations = vacRes.data.map(v => ({
                 id: v.id,
                 name: v.name,
                 start: v.start_date,
                 end: v.end_date
             }));
         }
-
-        if (bdayData) {
+        if (bdayRes.data) {
             birthdays = {};
-            bdayData.forEach(b => { birthdays[b.date_key] = b.person_name; });
+            bdayRes.data.forEach(b => { birthdays[b.date_key] = b.person_name; });
         }
+        return true;
     } catch (err) {
-        console.error("Ошибка при загрузке данных с Supabase:", err);
+        console.error('Ошибка при загрузке данных из Supabase:', err);
+        return false;
     }
 }
 
 /* ==========================================================================
-   5. APP LIFECYCLE & INITIALIZATION
-   ========================================================================== */
-/**
- * Главная точка входа в приложение
- */
+6. APP LIFECYCLE & INITIALIZATION (ТОЧКА ВХОДА)
+========================================================================== */
 async function init() {
     populateMonthDropdown();
-    await loadDataFromSupabase();
-    renderStaff();
-    renderEvents();
+    const ok = await loadDataFromSupabase();
     renderCalendar();
+    renderEvents();
+    renderStaff();
     updateAnalytics();
-    updateUiForAuthRole();
+    applyAuthUi();
+    hideLoadingOverlay();
+    if (!ok) {
+        showToast('Не удалось загрузить данные из БД. Обновите страницу.', 'error');
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 400);
 }
 
 /* ==========================================================================
-   6. AUTHENTICATION SYSTEM (СИСТЕМА АВТОРИЗАЦИИ)
-   ========================================================================== */
+7. AUTHENTICATION SYSTEM (СИСТЕМА АВТОРИЗАЦИИ)
+========================================================================== */
 function handleAuthClick() {
     if (isAdminLoggedIn) {
         isAdminLoggedIn = false;
         updateUiForAuthRole();
+        showToast('Вы вышли из режима администратора');
     } else {
-        const modal = document.getElementById('auth-modal');
-        document.getElementById('auth-password-input').value = '';
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('active'), 10);
-        document.getElementById('auth-password-input').focus();
+        openModalOverlay('auth-modal');
+        const input = document.getElementById('auth-password-input');
+        input.value = '';
+        input.focus();
     }
 }
 
 function closeAuthModal() {
-    const modal = document.getElementById('auth-modal');
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = 'none', 300);
+    closeModalOverlay('auth-modal');
 }
 
-function loginAdmin() {
+function loginAdmin(event) {
+    // Предотвращаем перезагрузку страницы и попадание пароля в URL
+    if (event) event.preventDefault();
     const input = document.getElementById('auth-password-input').value;
     if (input === ADMIN_PASSWORD) {
         isAdminLoggedIn = true;
         closeAuthModal();
         updateUiForAuthRole();
+        showToast('Вход выполнен');
     } else {
-        alert('Неверный пароль!');
+        showToast('Неверный пароль!', 'error');
     }
 }
 
-/**
- * Переключает отображение элементов управления в зависимости от прав (Гость/Админ)
- */
-function updateUiForAuthRole() {
+/** Переключает видимость элементов управления в зависимости от прав (только DOM-флаги) */
+function applyAuthUi() {
     const btn = document.getElementById('auth-btn');
     if (btn) {
-        btn.innerHTML = isAdminLoggedIn ? '🔒 Выйти' : '🔑 Вход';
+        btn.innerText = isAdminLoggedIn ? '🔒 Выйти' : '🔑 Вход';
         btn.classList.toggle('active-auth', isAdminLoggedIn);
     }
-
     document.querySelectorAll('.admin-only').forEach(el => {
         el.style.display = isAdminLoggedIn ? '' : 'none';
     });
+}
 
+/** Полное обновление интерфейса при смене роли (с перерисовкой списков) */
+function updateUiForAuthRole() {
+    applyAuthUi();
+    renderCalendar();
     renderEvents();
     renderStaff();
 }
 
 /* ==========================================================================
-   7. NAVIGATION & DATE HELPERS
-   ========================================================================== */
+8. NAVIGATION & DATE HELPERS (ФОРМАТИРОВАНИЕ ДАТ И НАВИГАЦИЯ)
+========================================================================== */
 function formatDateStr(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+/**
+ * Парсит YYYY-MM-DD как ЛОКАЛЬНУЮ дату (без сдвига из-за UTC).
+ * Устойчив и к полным ISO-строкам (берет только первые 10 символов).
+ */
+function parseDateLocal(dateStr) {
+    if (!dateStr) return null;
+    const [y, m, d] = String(dateStr).slice(0, 10).split('-').map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+}
+
+function formatHumanDate(dateStr) {
+    const d = parseDateLocal(dateStr);
+    if (!d) return dateStr;
+    return `${d.getDate()} ${monthsRuGenitive[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function populateMonthDropdown() {
@@ -219,6 +317,8 @@ function populateMonthDropdown() {
         opt.innerText = m;
         select.appendChild(opt);
     });
+    // По умолчанию — текущий отображаемый месяц
+    select.value = String(currentDate.getMonth() + 1).padStart(2, '0');
 }
 
 function navigatePeriod(delta) {
@@ -236,193 +336,259 @@ function goToday() {
 }
 
 function formatVacationRange(startStr, endStr) {
-    if (!startStr || !endStr) return '';
-    const s = new Date(startStr);
-    const e = new Date(endStr);
-    
+    const s = parseDateLocal(startStr);
+    const e = parseDateLocal(endStr);
+    if (!s || !e) return '';
     const sDay = s.getDate();
     const sMonth = monthsRuGenitive[s.getMonth()];
     const eDay = e.getDate();
     const eMonth = monthsRuGenitive[e.getMonth()];
-
-    if (s.getMonth() === e.getMonth()) {
-        return `${sDay} – ${eDay} ${sMonth}`;
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+        return `${sDay}–${eDay} ${sMonth}`;
     }
     return `${sDay} ${sMonth} – ${eDay} ${eMonth}`;
 }
 
 /* ==========================================================================
-   8. EVENTS: VACATIONS & BIRTHDAYS (ОТПУСКА И ДНИ РОЖДЕНИЯ)
-   ========================================================================== */
+9. EVENTS: VACATIONS & BIRTHDAYS (ОТПУСКА И ДНИ РОЖДЕНИЯ)
+========================================================================== */
 function renderEvents() {
     const vacContainer = document.getElementById('vacations-list');
     const bdayContainer = document.getElementById('birthdays-list');
     if (!vacContainer || !bdayContainer) return;
-    
-    vacContainer.innerHTML = '';
-    bdayContainer.innerHTML = '';
 
-    // Безопасный рендеринг списка отпусков
+    // Отпуска
+    const vacFragment = document.createDocumentFragment();
+    if (!vacations.length) vacFragment.appendChild(createEmptyHint('Отпусков пока нет'));
     vacations.forEach(v => {
-        const formattedDate = formatVacationRange(v.start, v.end);
         const card = document.createElement('div');
         card.className = 'info-card vacation';
-
         const infoSpan = document.createElement('span');
-        infoSpan.innerHTML = `<b>${escapeHtml(v.name)}</b>: ${formattedDate}`;
+        infoSpan.innerHTML = `<b>${escapeHtml(v.name)}</b>: ${escapeHtml(formatVacationRange(v.start, v.end))}`;
         card.appendChild(infoSpan);
-
         if (isAdminLoggedIn) {
-            const delBtn = document.createElement('span');
-            delBtn.className = 'delete-btn';
-            delBtn.innerHTML = '&times;';
-            delBtn.onclick = () => deleteVacation(v.id);
-            card.appendChild(delBtn);
+            card.appendChild(createDeleteBtn('Удалить отпуск', () => deleteVacation(v.id)));
         }
-
-        vacContainer.appendChild(card);
+        vacFragment.appendChild(card);
     });
+    vacContainer.innerHTML = '';
+    vacContainer.appendChild(vacFragment);
 
-    // Безопасный рендеринг списка дней рождения
-    Object.keys(birthdays).sort().forEach(dateKey => {
+    // Дни рождения
+    const bdayFragment = document.createDocumentFragment();
+    const dateKeys = Object.keys(birthdays).sort();
+    if (!dateKeys.length) bdayFragment.appendChild(createEmptyHint('Дней рождения пока нет'));
+    dateKeys.forEach(dateKey => {
         const [m, d] = dateKey.split('-');
         const monthName = monthsRuGenitive[parseInt(m, 10) - 1];
-        
         const card = document.createElement('div');
         card.className = 'info-card bday';
-
         const infoSpan = document.createElement('span');
         infoSpan.innerHTML = `<b>${escapeHtml(birthdays[dateKey])}</b> — ${parseInt(d, 10)} ${monthName}`;
         card.appendChild(infoSpan);
-
         if (isAdminLoggedIn) {
-            const delBtn = document.createElement('span');
-            delBtn.className = 'delete-btn';
-            delBtn.innerHTML = '&times;';
-            delBtn.onclick = () => deleteBirthday(dateKey);
-            card.appendChild(delBtn);
+            card.appendChild(createDeleteBtn('Удалить день рождения', () => deleteBirthday(dateKey)));
         }
-
-        bdayContainer.appendChild(card);
+        bdayFragment.appendChild(card);
     });
+    bdayContainer.innerHTML = '';
+    bdayContainer.appendChild(bdayFragment);
+}
+
+function createEmptyHint(text) {
+    const div = document.createElement('div');
+    div.className = 'empty-hint';
+    div.innerText = text;
+    return div;
+}
+
+function createDeleteBtn(label, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'delete-btn';
+    btn.setAttribute('aria-label', label);
+    btn.innerText = '×';
+    btn.onclick = onClick;
+    return btn;
 }
 
 function toggleSection(panelId, e) {
-    if (e && e.target.closest('.icon-btn')) return;
+    if (e && e.target.closest && e.target.closest('.icon-btn')) return;
     const panel = document.getElementById(panelId);
-    if (panel) panel.classList.toggle('collapsed');
+    if (!panel) return;
+    const collapsed = panel.classList.toggle('collapsed');
+    const title = panel.querySelector('.section-title');
+    if (title) title.setAttribute('aria-expanded', String(!collapsed));
 }
 
 function toggleForm(formId, btn, e) {
     if (!isAdminLoggedIn) return;
     if (e) e.stopPropagation();
-    
     const form = document.getElementById(formId);
-    const panel = form?.closest('.glass-panel');
-    
+    if (!form) return;
+
+    // Если панель свернута — разворачиваем, чтобы форма была видна
+    const panel = form.closest('.glass-panel');
     if (panel && panel.classList.contains('collapsed')) {
         panel.classList.remove('collapsed');
+        const title = panel.querySelector('.section-title');
+        if (title) title.setAttribute('aria-expanded', 'true');
     }
 
     const isOpen = form.classList.toggle('active');
     if (btn) {
         btn.classList.toggle('active', isOpen);
-        btn.innerHTML = isOpen ? '&times;' : '+';
+        btn.innerText = isOpen ? '×' : '+';
+        btn.setAttribute('aria-expanded', String(isOpen));
     }
 }
 
-async function addVacation() {
-    if (!isAdminLoggedIn) return;
-    const name = document.getElementById('vacation-name').value.trim();
-    const start = document.getElementById('vacation-start').value;
-    const end = document.getElementById('vacation-end').value;
+async function addVacation(event) {
+    if (event) event.preventDefault();
+    if (!isAdminLoggedIn || isRequestInProgress) return;
 
-    if (name && start && end) {
+    const nameInput = document.getElementById('vacation-name');
+    const startInput = document.getElementById('vacation-start');
+    const endInput = document.getElementById('vacation-end');
+    const name = nameInput.value.trim();
+    const start = startInput.value;
+    const end = endInput.value;
+
+    if (!name || !start || !end) {
+        showToast('Заполните все поля отпуска', 'error');
+        return;
+    }
+    if (end < start) {
+        showToast('Дата окончания раньше даты начала', 'error');
+        return;
+    }
+
+    isRequestInProgress = true;
+    try {
         const { data, error } = await supabaseClient
             .from('vacations')
             .insert([{ name, start_date: start, end_date: end }])
             .select();
-
-        if (!error && data) {
-            vacations.push({ id: data[0].id, name, start, end });
-            document.getElementById('vacation-name').value = '';
-            document.getElementById('vacation-start').value = '';
-            document.getElementById('vacation-end').value = '';
-            renderEvents();
-            toggleForm('vacation-form', document.querySelector("#vacations-panel .icon-btn"));
-        }
+        if (error) throw error;
+        vacations.push({ id: data[0].id, name, start, end });
+        nameInput.value = '';
+        startInput.value = '';
+        endInput.value = '';
+        renderEvents();
+        toggleForm('vacation-form', document.querySelector('#vacations-panel .icon-btn'));
+        showToast('Отпуск добавлен');
+    } catch (err) {
+        console.error('Ошибка добавления отпуска:', err);
+        showToast('Не удалось сохранить отпуск', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 async function deleteVacation(id) {
-    if (!isAdminLoggedIn) return;
-    const { error } = await supabaseClient.from('vacations').delete().eq('id', id);
-    if (!error) {
+    if (!isAdminLoggedIn || isRequestInProgress) return;
+    isRequestInProgress = true;
+    try {
+        const { error } = await supabaseClient.from('vacations').delete().eq('id', id);
+        if (error) throw error;
         vacations = vacations.filter(v => v.id !== id);
         renderEvents();
+        showToast('Отпуск удален');
+    } catch (err) {
+        console.error('Ошибка удаления отпуска:', err);
+        showToast('Не удалось удалить отпуск', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
-async function addBirthday() {
-    if (!isAdminLoggedIn) return;
-    const name = document.getElementById('bday-name').value.trim();
-    const day = parseInt(document.getElementById('bday-day').value, 10);
-    const month = document.getElementById('bday-month').value;
+async function addBirthday(event) {
+    if (event) event.preventDefault();
+    if (!isAdminLoggedIn || isRequestInProgress) return;
 
-    if (name && day >= 1 && day <= 31) {
-        const key = `${month}-${String(day).padStart(2, '0')}`;
+    const nameInput = document.getElementById('bday-name');
+    const dayInput = document.getElementById('bday-day');
+    const name = nameInput.value.trim();
+    const day = parseInt(dayInput.value, 10);
+
+    if (!name || !(day >= 1 && day <= 31)) {
+        showToast('Укажите имя и корректный день (1–31)', 'error');
+        return;
+    }
+
+    // Примечание по модели данных: на одну дату хранится только один ДР
+    // (upsert по date_key перезаписывает имя).
+    const key = `${document.getElementById('bday-month').value}-${String(day).padStart(2, '0')}`;
+
+    isRequestInProgress = true;
+    try {
         const { error } = await supabaseClient.from('birthdays').upsert([
             { date_key: key, person_name: name }
         ]);
-
-        if (!error) {
-            birthdays[key] = name;
-            document.getElementById('bday-name').value = '';
-            document.getElementById('bday-day').value = '';
-            renderEvents();
-            renderCalendar();
-            toggleForm('bday-form', document.querySelector("#bday-panel .icon-btn"));
-        }
+        if (error) throw error;
+        birthdays[key] = name;
+        nameInput.value = '';
+        dayInput.value = '';
+        renderEvents();
+        renderCalendar();
+        toggleForm('bday-form', document.querySelector('#bday-panel .icon-btn'));
+        showToast('День рождения добавлен');
+    } catch (err) {
+        console.error('Ошибка добавления дня рождения:', err);
+        showToast('Не удалось сохранить день рождения', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 async function deleteBirthday(dateKey) {
-    if (!isAdminLoggedIn) return;
-    const { error } = await supabaseClient.from('birthdays').delete().eq('date_key', dateKey);
-    if (!error) {
+    if (!isAdminLoggedIn || isRequestInProgress) return;
+    isRequestInProgress = true;
+    try {
+        const { error } = await supabaseClient.from('birthdays').delete().eq('date_key', dateKey);
+        if (error) throw error;
         delete birthdays[dateKey];
         renderEvents();
         renderCalendar();
+        showToast('День рождения удален');
+    } catch (err) {
+        console.error('Ошибка удаления дня рождения:', err);
+        showToast('Не удалось удалить день рождения', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 /* ==========================================================================
-   9. CALENDAR RENDERING (СЕТКА КАЛЕНДАРЯ)
-   ========================================================================== */
+10. CALENDAR RENDERING (СЕТКА КАЛЕНДАРЯ)
+========================================================================== */
 function renderCalendar() {
     const grid = document.getElementById('calendar-grid');
     if (!grid) return;
 
+    // Перезапуск анимации появления (стандартный reflow-прием)
     grid.style.animation = 'none';
-    grid.offsetHeight; // Триггер reflow для перезапуска анимации
+    void grid.offsetHeight;
     grid.style.animation = 'fadeIn 0.4s ease-out';
     grid.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
 
     // Дни недели
     const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     days.forEach((d, idx) => {
         const div = document.createElement('div');
-        div.className = `weekday ${idx >= 5 ? 'weekend' : ''}`;
+        div.className = idx >= 5 ? 'weekday weekend' : 'weekday';
         div.innerText = d;
-        grid.appendChild(div);
+        fragment.appendChild(div);
     });
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    document.getElementById('current-period-label').innerText = `${monthsRu[month]} ${year}`;
+    const label = document.getElementById('current-period-label');
+    if (label) label.innerText = `${monthsRu[month]} ${year}`;
 
     const todayStr = formatDateStr(new Date());
-
     let firstDay = new Date(year, month, 1).getDay();
     firstDay = firstDay === 0 ? 6 : firstDay - 1;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -430,10 +596,9 @@ function renderCalendar() {
     // Пустые ячейки до первого дня месяца
     for (let i = 0; i < firstDay; i++) {
         const empty = document.createElement('div');
-        empty.className = 'day-card';
-        empty.style.opacity = '0.15';
-        empty.style.cursor = 'default';
-        grid.appendChild(empty);
+        empty.className = 'day-card empty';
+        empty.setAttribute('aria-hidden', 'true');
+        fragment.appendChild(empty);
     }
 
     // Заполнение дней месяца
@@ -442,12 +607,17 @@ function renderCalendar() {
         const dateStr = formatDateStr(dateObj);
         const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
         const isToday = dateStr === todayStr;
-        
+
         const cell = document.createElement('div');
-        cell.className = `day-card ${isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''}`;
-        
-        let bdayHtml = '';
+        cell.className = [
+            'day-card',
+            isWeekend ? 'is-weekend' : '',
+            isToday ? 'is-today' : '',
+            isAdminLoggedIn ? '' : 'readonly'
+        ].filter(Boolean).join(' ');
+
         const monthDayKey = dateStr.slice(5);
+        let bdayHtml = '';
         if (birthdays[monthDayKey]) {
             bdayHtml = `<div class="bday-badge">🎂 ${escapeHtml(birthdays[monthDayKey].split(' ')[0])}</div>`;
         }
@@ -459,9 +629,10 @@ function renderCalendar() {
             ${bdayHtml}
         `;
 
-        // Тег назначенной смены
-        if (shifts[dateStr]) {
-            const person = shifts[dateStr];
+        // Тег назначенной смены (v1.2.0: смена — объект { person, overtime })
+        const shift = shifts[dateStr];
+        if (shift) {
+            const person = shift.person;
             const tag = document.createElement('div');
             tag.className = `duty-tag ${selectedStaff === person ? 'highlighted' : ''}`;
             tag.setAttribute('data-person', person);
@@ -469,124 +640,184 @@ function renderCalendar() {
             cell.appendChild(tag);
         }
 
-        cell.onclick = () => {
-            if (isAdminLoggedIn) {
-                openModal(dateStr);
-            }
-        };
-        
-        grid.appendChild(cell);
+        // Интерактивность только для администратора: мышь + клавиатура
+        if (isAdminLoggedIn) {
+            cell.setAttribute('role', 'button');
+            cell.setAttribute('tabindex', '0');
+            cell.setAttribute('aria-label',
+                `${day} ${monthsRuGenitive[month]}${shift ? `, дежурит: ${shift.person}` : ''}`);
+            cell.addEventListener('click', () => openModal(dateStr));
+            cell.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openModal(dateStr);
+                }
+            });
+        }
+
+        fragment.appendChild(cell);
     }
+
+    grid.appendChild(fragment);
 }
 
 function updateHighlights() {
     document.querySelectorAll('.duty-tag').forEach(tag => {
         const person = tag.getAttribute('data-person');
-        if (selectedStaff && person === selectedStaff) {
-            tag.classList.add('highlighted');
-        } else {
-            tag.classList.remove('highlighted');
-        }
+        tag.classList.toggle('highlighted', Boolean(selectedStaff && person === selectedStaff));
     });
 }
 
 /* ==========================================================================
-   10. SHIFT MODAL CONTROLLER (МОДАЛКА НАЗНАЧЕНИЯ СМЕНЫ)
-   ========================================================================== */
+11. SHIFT MODAL CONTROLLER (МОДАЛКА НАЗНАЧЕНИЯ СМЕНЫ)
+========================================================================== */
 function openModal(dateStr) {
     if (!isAdminLoggedIn) return;
     activeEditDate = dateStr;
-    document.getElementById('modal-date-title').innerText = `Смена на ${dateStr}`;
+
+    const title = document.getElementById('modal-date-title');
+    if (title) title.innerText = `Смена на ${formatHumanDate(dateStr)}`;
+
+    const existing = shifts[dateStr];
     const select = document.getElementById('modal-staff-select');
     select.innerHTML = '';
-    
     staff.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s;
         opt.innerText = s;
-        if (shifts[dateStr] === s) opt.selected = true;
+        if (existing && existing.person === s) opt.selected = true;
         select.appendChild(opt);
     });
+    if (!staff.length) {
+        const opt = document.createElement('option');
+        opt.innerText = 'Нет сотрудников';
+        opt.disabled = true;
+        select.appendChild(opt);
+    }
 
-    const overlay = document.getElementById('shift-modal');
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('active'), 10);
+    // v1.2.0: предзаполнение часов переработки (0 для новой смены)
+    const overtimeInput = document.getElementById('modal-overtime-input');
+    if (overtimeInput) overtimeInput.value = existing ? existing.overtime : 0;
+
+    // Нельзя сохранить смену, если список сотрудников пуст
+    const saveBtn = document.getElementById('modal-save-btn');
+    if (saveBtn) saveBtn.disabled = staff.length === 0;
+
+    openModalOverlay('shift-modal');
+    select.focus();
 }
 
 function closeModal() {
-    const overlay = document.getElementById('shift-modal');
-    overlay.classList.remove('active');
-    setTimeout(() => {
-        overlay.style.display = 'none';
-        activeEditDate = null;
-    }, 300);
+    closeModalOverlay('shift-modal');
+    setTimeout(() => { activeEditDate = null; }, 300);
 }
 
 async function saveModalShift() {
-    if (!isAdminLoggedIn || !activeEditDate) return;
+    if (!isAdminLoggedIn || !activeEditDate || isRequestInProgress) return;
+
     const person = document.getElementById('modal-staff-select').value;
+    if (!person) {
+        showToast('Нет сотрудников для назначения', 'error');
+        return;
+    }
+    // v1.2.0: часы переработки вводятся вручную и сохраняются в БД
+    const overtime = parseOvertime(document.getElementById('modal-overtime-input').value);
 
-    const { error } = await supabaseClient.from('shifts').upsert([
-        { shift_date: activeEditDate, staff_name: person }
-    ]);
-
-    if (!error) {
-        shifts[activeEditDate] = person;
+    isRequestInProgress = true;
+    try {
+        const { error } = await supabaseClient.from('shifts').upsert([
+            { shift_date: activeEditDate, staff_name: person, overtime_hours: overtime }
+        ]);
+        if (error) throw error;
+        shifts[activeEditDate] = { person, overtime };
         closeModal();
         renderCalendar();
         renderStaff();
         updateAnalytics();
+        showToast('Смена назначена');
+    } catch (err) {
+        console.error('Ошибка сохранения смены:', err);
+        showToast('Не удалось сохранить смену', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 async function deleteModalShift() {
-    if (!isAdminLoggedIn || !activeEditDate) return;
-
-    const { error } = await supabaseClient.from('shifts').delete().eq('shift_date', activeEditDate);
-
-    if (!error) {
+    if (!isAdminLoggedIn || !activeEditDate || isRequestInProgress) return;
+    isRequestInProgress = true;
+    try {
+        const { error } = await supabaseClient.from('shifts').delete().eq('shift_date', activeEditDate);
+        if (error) throw error;
         delete shifts[activeEditDate];
         closeModal();
         renderCalendar();
         renderStaff();
         updateAnalytics();
+        showToast('Смена снята');
+    } catch (err) {
+        console.error('Ошибка снятия смены:', err);
+        showToast('Не удалось снять смену', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 /* ==========================================================================
-   11. STAFF MANAGEMENT (УПРАВЛЕНИЕ СОТРУДНИКАМИ)
-   ========================================================================== */
+12. STAFF MANAGEMENT (УПРАВЛЕНИЕ СОТРУДНИКАМИ)
+========================================================================== */
+/* Один проход по сменам вместо фильтра для каждого сотрудника */
+function countShiftsByStaff(monthStr) {
+    const counts = {};
+    for (const [date, shift] of Object.entries(shifts)) {
+        if (date.startsWith(monthStr)) {
+            counts[shift.person] = (counts[shift.person] || 0) + 1;
+        }
+    }
+    return counts;
+}
+
 function renderStaff() {
     const list = document.getElementById('staff-list');
     if (!list) return;
-    list.innerHTML = '';
+
+    const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    const monthCounts = countShiftsByStaff(monthStr);
+
+    const fragment = document.createDocumentFragment();
+    if (!staff.length) fragment.appendChild(createEmptyHint('Список сотрудников пуст'));
 
     staff.forEach(name => {
         const item = document.createElement('div');
         item.className = `staff-item ${selectedStaff === name ? 'active' : ''}`;
-        
-        const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-        const monthCount = Object.keys(shifts).filter(d => d.startsWith(currentMonthStr) && shifts[d] === name).length;
 
         const infoDiv = document.createElement('div');
         infoDiv.className = 'staff-info';
-        infoDiv.onclick = () => selectStaff(name);
+        infoDiv.setAttribute('role', 'button');
+        infoDiv.setAttribute('tabindex', '0');
+        infoDiv.setAttribute('aria-pressed', String(selectedStaff === name));
+        infoDiv.setAttribute('aria-label', `${name}: ${selectedStaff === name ? 'сбросить фильтр' : 'показать смены'}`);
         infoDiv.innerHTML = `
-            <span class="staff-name">${escapeHtml(name)} (${monthCount})</span>
-            <span class="staff-action-hint">${selectedStaff === name ? 'Сбросить' : 'Показать смены'}</span>
+            <span class="staff-name">${escapeHtml(name)} (${monthCounts[name] || 0})</span>
+            <span class="staff-action-hint" aria-hidden="true">${selectedStaff === name ? 'Сбросить' : 'Показать смены'}</span>
         `;
+        infoDiv.addEventListener('click', () => selectStaff(name));
+        infoDiv.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectStaff(name);
+            }
+        });
         item.appendChild(infoDiv);
 
         if (isAdminLoggedIn) {
-            const delBtn = document.createElement('span');
-            delBtn.className = 'delete-btn';
-            delBtn.innerHTML = '&times;';
-            delBtn.onclick = (e) => deleteStaff(name, e);
-            item.appendChild(delBtn);
+            item.appendChild(createDeleteBtn(`Удалить сотрудника ${name}`, (e) => deleteStaff(name, e)));
         }
-
-        list.appendChild(item);
+        fragment.appendChild(item);
     });
+
+    list.innerHTML = '';
+    list.appendChild(fragment);
 }
 
 function selectStaff(name) {
@@ -596,80 +827,116 @@ function selectStaff(name) {
     updateAnalytics();
 }
 
-async function addStaff() {
-    if (!isAdminLoggedIn) return;
+async function addStaff(event) {
+    if (event) event.preventDefault();
+    if (!isAdminLoggedIn || isRequestInProgress) return;
+
     const input = document.getElementById('new-staff-name');
     const name = input.value.trim();
-    if (name && !staff.includes(name)) {
+    if (!name) return;
+    if (staff.includes(name)) {
+        showToast('Сотрудник с таким именем уже есть', 'error');
+        return;
+    }
+
+    isRequestInProgress = true;
+    try {
         const { error } = await supabaseClient.from('staff').insert([{ name }]);
-        if (!error) {
-            staff.push(name);
-            input.value = '';
-            renderStaff();
-        }
+        if (error) throw error;
+        staff.push(name);
+        input.value = '';
+        renderStaff();
+        showToast(`Сотрудник «${name}» добавлен`);
+    } catch (err) {
+        console.error('Ошибка добавления сотрудника:', err);
+        showToast('Не удалось добавить сотрудника', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 async function deleteStaff(name, event) {
-    if (!isAdminLoggedIn) return;
-    event.stopPropagation();
-    const { error } = await supabaseClient.from('staff').delete().eq('name', name);
-    if (!error) {
+    if (event) event.stopPropagation();
+    if (!isAdminLoggedIn || isRequestInProgress) return;
+    isRequestInProgress = true;
+    try {
+        const { error } = await supabaseClient.from('staff').delete().eq('name', name);
+        if (error) throw error;
         staff = staff.filter(s => s !== name);
         if (selectedStaff === name) selectedStaff = null;
         renderStaff();
         renderCalendar();
         updateAnalytics();
+        showToast(`Сотрудник «${name}» удален`);
+    } catch (err) {
+        console.error('Ошибка удаления сотрудника:', err);
+        showToast('Не удалось удалить сотрудника', 'error');
+    } finally {
+        isRequestInProgress = false;
     }
 }
 
 /* ==========================================================================
-   12. ANALYTICS & OVERTIME ENGINE (АНАЛИТИКА И ПЕРЕРАБОТКИ)
-   ========================================================================== */
+13. ANALYTICS & OVERTIME ENGINE (АНАЛИТИКА И ПЕРЕРАБОТКИ)
+========================================================================== */
+/**
+ * v1.2.0: нормализация значения часов переработки из инпута/БД.
+ * Приводит к числу >= 0 с округлением до сотых (понимает запятую).
+ */
+function parseOvertime(value) {
+    const num = parseFloat(String(value).replace(',', '.'));
+    if (!Number.isFinite(num) || num < 0) return 0;
+    return Math.round(num * 100) / 100;
+}
+
 function updateAnalytics() {
+    const monthEl = document.getElementById('stat-user-month');
+    const yearEl = document.getElementById('stat-user-year');
+    const overtimeEl = document.getElementById('stat-user-overtime');
+    if (!monthEl || !yearEl || !overtimeEl) return;
+
+    if (!selectedStaff) {
+        monthEl.innerText = '-';
+        yearEl.innerText = '-';
+        overtimeEl.innerText = '-';
+        return;
+    }
+
     const currentYear = currentDate.getFullYear();
     const currentMonthStr = `${currentYear}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
-    // Часы переработки по дням недели (1-Пн ... 0-Вс)
-    const overtimeByDay = { 1: 16, 2: 16, 3: 16, 4: 16, 5: 24, 6: 32, 0: 24 };
-
-    if (selectedStaff) {
-        const userMonthShifts = Object.keys(shifts).filter(d => d.startsWith(currentMonthStr) && shifts[d] === selectedStaff);
-        const userYearShifts = Object.keys(shifts).filter(d => d.startsWith(String(currentYear)) && shifts[d] === selectedStaff);
-        
-        document.getElementById('stat-user-month').innerText = userMonthShifts.length;
-        document.getElementById('stat-user-year').innerText = userYearShifts.length;
-
-        let overtimeHours = 0;
-        userMonthShifts.forEach(dStr => {
-            const [y, m, d] = dStr.split('-').map(Number);
-            const dateObj = new Date(y, m - 1, d);
-            const dayOfWeek = dateObj.getDay();
-            overtimeHours += overtimeByDay[dayOfWeek] || 0;
-        });
-
-        document.getElementById('stat-user-overtime').innerText = `${overtimeHours} ч.`;
-    } else {
-        document.getElementById('stat-user-month').innerText = '-';
-        document.getElementById('stat-user-year').innerText = '-';
-        document.getElementById('stat-user-overtime').innerText = '-';
+    // v1.2.0: авторасчет по дням недели УДАЛЕН.
+    // Переработки — простая сумма часов, сохраненных в сменах сотрудника.
+    let monthShifts = 0;
+    let yearShifts = 0;
+    let overtimeHours = 0;
+    for (const [dateStr, shift] of Object.entries(shifts)) {
+        if (shift.person !== selectedStaff) continue;
+        if (dateStr.startsWith(String(currentYear))) yearShifts++;
+        if (dateStr.startsWith(currentMonthStr)) {
+            monthShifts++;
+            overtimeHours += shift.overtime;
+        }
     }
+
+    monthEl.innerText = monthShifts;
+    yearEl.innerText = yearShifts;
+    overtimeEl.innerText = `${Math.round(overtimeHours * 100) / 100} ч.`;
 }
 
 /* ==========================================================================
-   13. CHANGELOG & HELP MODALS (СПРАВКА И ЧЕЙНДЖЛОГ)
-   ========================================================================== */
+14. CHANGELOG & HELP MODALS (СПРАВКА И ЧЕЙНДЖЛОГ)
+========================================================================== */
 function openChangelogModal(e) {
     if (e) e.preventDefault();
-    
     const container = document.getElementById('changelog-body');
     if (!container) return;
 
     container.innerHTML = CHANGELOG_DATA.map(rel => `
         <div class="changelog-version-block">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                <strong style="color:#fff; font-size:0.95rem;">${rel.version}</strong>
-                <span class="changelog-date">${rel.date}</span>
+            <div class="changelog-version-header">
+                <strong class="changelog-version">${escapeHtml(rel.version)}</strong>
+                <span class="changelog-date">${escapeHtml(rel.date)}</span>
             </div>
             <ul class="changelog-list">
                 ${rel.changes.map(item => `
@@ -684,45 +951,75 @@ function openChangelogModal(e) {
         </div>
     `).join('');
 
-    const modal = document.getElementById('changelog-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
+    openModalOverlay('changelog-modal');
 }
 
 function closeChangelogModal() {
-    const modal = document.getElementById('changelog-modal');
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = 'none', 300);
+    closeModalOverlay('changelog-modal');
 }
 
 function openHelpModal(e) {
     if (e) e.preventDefault();
-    const modal = document.getElementById('help-modal');
-    if (!modal) return;
-    
     const checkbox = document.getElementById('dont-show-help-again');
     if (checkbox) checkbox.checked = false;
-
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
+    openModalOverlay('help-modal');
 }
 
 function closeHelpModal() {
-    const modal = document.getElementById('help-modal');
-    if (!modal) return;
-    
+    // Сохранение настройки происходит при ЛЮБОМ способе закрытия (кнопка, оверлей, Escape)
     const checkbox = document.getElementById('dont-show-help-again');
     if (checkbox && checkbox.checked) {
         localStorage.setItem('ipm_roster_hide_help', 'true');
     }
-
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = 'none', 300);
+    closeModalOverlay('help-modal');
 }
 
-/**
- * Вспомогательная функция безопасного экранирования спецсимволов HTML
- */
+/* ==========================================================================
+15. MODAL UTILITIES (ОБЩИЕ МЕХАНИЗМЫ МОДАЛОК)
+========================================================================== */
+function openModalOverlay(id) {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    lastFocusedElement = document.activeElement;
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('active'));
+}
+
+function closeModalOverlay(id) {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        // Возврат фокуса на элемент, открывший модалку
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus();
+        }
+        lastFocusedElement = null;
+    }, 300);
+}
+
+/** Фокус-трап: Tab циклически перемещается внутри открытой модалки */
+function trapFocus(container, e) {
+    const focusables = container.querySelectorAll(
+        'button:not([disabled]), input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+    }
+}
+
+/* ==========================================================================
+16. SECURITY HELPERS (ЭКРАНИРОВАНИЕ)
+========================================================================== */
+/* Экранирование спецсимволов HTML для защиты от XSS */
 function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -730,16 +1027,77 @@ function escapeHtml(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#39;');
 }
 
 /* ==========================================================================
-   DOM READY LISTENER & INIT TRIGGER
-   ========================================================================== */
+17. GLOBAL HANDLERS (ЗАКРЫТИЕ МОДАЛОК, КЛАВИАТУРА)
+Единая точка закрытия: оверлей-клик и Escape вызывают штатные
+close*-функции, поэтому побочные логики (например, сохранение
+чекбокса справки) не теряются.
+========================================================================== */
+const MODAL_CLOSERS = {
+    'shift-modal': closeModal,
+    'auth-modal': closeAuthModal,
+    'changelog-modal': closeChangelogModal,
+    'help-modal': closeHelpModal
+};
+
+function getVisibleModalOverlay() {
+    const overlays = document.querySelectorAll('.modal-overlay');
+    for (let i = overlays.length - 1; i >= 0; i--) {
+        if (overlays[i].style.display === 'flex') return overlays[i];
+    }
+    return null;
+}
+
+function requestCloseOverlay(overlay) {
+    const closer = MODAL_CLOSERS[overlay.id];
+    if (closer) closer();
+}
+
+// Закрытие по клику на подложку
+document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('modal-overlay')
+        && e.target.style.display === 'flex') {
+        requestCloseOverlay(e.target);
+    }
+});
+
+// Escape (закрытие) и Tab (фокус-трап)
+document.addEventListener('keydown', (e) => {
+    const overlay = getVisibleModalOverlay();
+    if (!overlay) return;
+    if (e.key === 'Escape') {
+        requestCloseOverlay(overlay);
+    } else if (e.key === 'Tab') {
+        trapFocus(overlay, e);
+    }
+});
+
+// Клавиатурная активация сворачиваемых заголовков секций
+document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ')
+        && e.target.classList && e.target.classList.contains('section-title')
+        && e.target.hasAttribute('tabindex')) {
+        e.preventDefault();
+        e.target.click();
+    }
+});
+
+/* ==========================================================================
+18. DOM READY & INIT TRIGGER
+========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
+    // Версия в футере всегда соответствует последней записи чейнджлога
+    const footerVersion = document.getElementById('footer-version');
+    if (footerVersion && CHANGELOG_DATA.length) {
+        footerVersion.innerText = CHANGELOG_DATA[0].version;
+    }
+
     const hideHelp = localStorage.getItem('ipm_roster_hide_help');
     if (!hideHelp) {
-        setTimeout(() => { openHelpModal(); }, 400);
+        setTimeout(openHelpModal, 400);
     }
 });
 
