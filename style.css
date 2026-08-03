@@ -575,6 +575,142 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
     font-weight: 600;
 }
 
+/* Стили подвала (Footer) */
+.app-footer {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 10px;
+    padding: 16px 8px 8px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    font-size: 0.8rem;
+}
+
+.footer-copyright {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.footer-link {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.footer-link:hover {
+    color: var(--accent-green);
+    text-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Элементы модалки Чейнджлога */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    color: var(--accent-green);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    margin-left: 8px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-green);
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.changelog-modal-content {
+    width: 440px !important;
+    max-width: 90vw;
+}
+
+.version-tag {
+    background: rgba(0, 255, 136, 0.12);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: var(--accent-green);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.changelog-body {
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.changelog-version-block {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 12px;
+}
+
+.changelog-version-block:last-child {
+    border-bottom: none;
+}
+
+.changelog-date {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.changelog-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.changelog-item {
+    font-size: 0.8rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.3;
+}
+
+.changelog-type {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.type-new { background: rgba(0, 255, 136, 0.15); color: var(--accent-green); }
+.type-fix { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
+.type-upd { background: rgba(76, 201, 240, 0.15); color: var(--vacation-color); }
+
 /* Мобильная адаптивность */
 @media (max-width: 768px) {
     body {
@@ -617,4 +753,88 @@ input[type="text"]:focus, input[type="date"]:focus, select:focus {
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+
+    .app-footer {
+        padding: 12px 4px 4px 4px;
+        font-size: 0.75rem;
+    }
+
+    /* --- Интерактивная подсказка фильтрации сотрудников --- */
+.staff-item {
+    position: relative;
+    padding: 0 12px;
+    height: 38px;
+}
+
+.staff-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.staff-name {
+    white-space: nowrap;
+    transition: var(--transition-fast);
+}
+
+.staff-action-hint {
+    font-size: 0.7rem;
+    color: var(--accent-green);
+    opacity: 0;
+    transform: translateX(8px);
+    transition: var(--transition-fast);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Эффекты при наведении */
+.staff-item:hover .staff-action-hint {
+    opacity: 0.85;
+    transform: translateX(0);
+}
+
+.staff-item.active .staff-action-hint {
+    color: var(--danger);
+    opacity: 0.7;
+}
+
+.staff-item.active:hover .staff-action-hint {
+    opacity: 1;
+}
+
+/* ==========================================
+   Глобальная стилизация скроллбара (Chrome / Yandex)
+   ========================================== */
+
+/* Применяем правила КО ВСЕМ элементам на странице (* и ::-webkit-scrollbar) */
+*::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+*::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 10px !important;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-green) !important;
+    box-shadow: 0 0 10px var(--accent-glow) !important;
+}
+
+/* Полностью прячем системные стрелочки */
+*::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
 }

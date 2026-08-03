@@ -16,6 +16,31 @@ let activeEditDate = null;
 const monthsRu = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 const monthsRuGenitive = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
+// Структурированный чейнджлог приложения
+const CHANGELOG_DATA = [
+    {
+        version: "v1.1.0",
+        date: "Август 2026",
+        changes: [
+            { type: "new", text: "Добавлена ролевая модель авторизации (Режим Гостя / Администратора)." },
+            { type: "new", text: "Добавлен статус активности системы и интерактивное модальное окно чейнджлога." },
+            { type: "upd", text: "Скрыты элементы управления добавлением и удалением дежурств для неавторизованных пользователей." },
+            { type: "upd", text: "Расширена аналитическая панель с расчетом ночных и выходных переработок." },
+            { type: "fix", text: "Исправлено корректное отображение диапазонов дат отпусков, пересекающих границу месяцев." }
+        ]
+    },
+    {
+        version: "v1.0.0",
+        date: "Август 2026",
+        changes: [
+            { type: "new", text: "Первый релиз IPM Roster." },
+            { type: "new", text: "Полная синхронизация графика дежурств с Supabase в реальном времени." },
+            { type: "new", text: "Интерактивный сетчатый календарь с подсветкой текущей даты." },
+            { type: "new", text: "Учет отпусков сотрудников и плашки дней рождения в ячейках календаря." }
+        ]
+    }
+];
+
 // Локальное состояние приложения
 let birthdays = {};
 let vacations = [];
@@ -112,7 +137,7 @@ function updateUiForAuthRole() {
         btn.classList.toggle('active-auth', isAdminLoggedIn);
     }
 
-    // Скрываем или показываем элеметы редактирования
+    // Скрываем или показываем элементы редактирования
     document.querySelectorAll('.admin-only').forEach(el => {
         el.style.display = isAdminLoggedIn ? '' : 'none';
     });
@@ -443,7 +468,10 @@ function renderStaff() {
         const delBtn = isAdminLoggedIn ? `<span class="delete-btn" onclick="deleteStaff('${name}', event)">&times;</span>` : '';
 
         item.innerHTML = `
-            <span onclick="selectStaff('${name}')" style="flex:1;">${name} (${monthCount})</span>
+            <div class="staff-info" onclick="selectStaff('${name}')">
+                <span class="staff-name">${name} (${monthCount})</span>
+                <span class="staff-action-hint">${selectedStaff === name ? 'Сбросить' : 'Показать смены'}</span>
+            </div>
             ${delBtn}
         `;
         list.appendChild(item);
@@ -520,6 +548,45 @@ function updateAnalytics() {
         document.getElementById('stat-user-year').innerText = '-';
         document.getElementById('stat-user-overtime').innerText = '-';
     }
+}
+
+// Открытие модального окна Чейнджлога
+function openChangelogModal(e) {
+    if (e) e.preventDefault();
+    
+    const container = document.getElementById('changelog-body');
+    if (!container) return;
+
+    // Генерация списка изменений по категориям
+    container.innerHTML = CHANGELOG_DATA.map(rel => `
+        <div class="changelog-version-block">
+            <div style="display:flex; justify-style:space-between; align-items:center; margin-bottom: 6px;">
+                <strong style="color:#fff; font-size:0.95rem;">${rel.version}</strong>
+                <span class="changelog-date">${rel.date}</span>
+            </div>
+            <ul class="changelog-list">
+                ${rel.changes.map(item => `
+                    <li class="changelog-item">
+                        <span class="changelog-type type-${item.type}">
+                            ${item.type === 'new' ? 'Новое' : item.type === 'fix' ? 'Фикс' : 'Изм'}
+                        </span>
+                        <span>${item.text}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    `).join('');
+
+    const modal = document.getElementById('changelog-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+// Закрытие модального окна Чейнджлога
+function closeChangelogModal() {
+    const modal = document.getElementById('changelog-modal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
 }
 
 // Запуск инициализации приложения
