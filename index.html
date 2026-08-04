@@ -21,7 +21,14 @@
             <div class="title-group">
                 <h1>⚡ IPM <span>Roster</span></h1>
             </div>
-            <button type="button" id="auth-btn" class="nav-btn" onclick="handleAuthClick()">🔑 Вход</button>
+            <nav class="nav-btns">
+                <a href="https://t.me/ipm_roster_bot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="nav-btn tg-btn"
+                    aria-label="Открыть Telegram-бота">✈️ Telegram</a>
+                <button type="button" id="auth-btn" class="nav-btn" onclick="handleAuthClick()">🔑 Вход</button>
+            </nav>
         </header>
 
         <!-- КАЛЕНДАРЬ: навигация по месяцам теперь в заголовке блока -->
@@ -40,6 +47,7 @@
         </main>
 
         <aside class="sidebar">
+            <div class="sidebar-inner">
             <!-- АНАЛИТИКА -->
             <section class="glass-panel">
                 <h2 class="section-title">📊 Аналитика</h2>
@@ -115,6 +123,7 @@
                     <button type="submit" class="btn">Добавить</button>
                 </form>
             </section>
+            </div>
         </aside>
 
         <footer class="app-footer">
@@ -184,6 +193,17 @@
                     <h4>🔑 Режимы доступа</h4>
                     <p>Режим Гостя: просмотр актуального графика, списка отпусков, фильтрация смен и аналитика переработок.</p>
                     <p>Режим Администратора: переключение по кнопке «🔑 Вход» (требуется пароль). Позволяет назначать/снимать дежурства, добавлять отпуска, дни рождения и управлять списком сотрудников.</p>
+                </div>
+                <div class="help-section">
+                    <h4>✈️ Telegram-бот и уведомления</h4>
+                    <p>У IPM Roster есть Telegram-бот <b>@ipm_roster_bot</b> — он присылает уведомления о дежурствах в личные сообщения. Открыть бота можно по кнопке «✈️ Telegram» в шапке сайта.</p>
+                    <ul>
+                        <li><b>Подключение:</b> откройте бота, нажмите <b>Start</b> и выберите себя из списка сотрудников одной кнопкой. После этого вы будете получать рассылки автоматически.</li>
+                        <li><b>07:50</b> — утренняя сводка: кто дежурит сегодня, а также дни рождения сегодня и завтра.</li>
+                        <li><b>16:50</b> — вечернее напоминание: кто дежурит сегодня.</li>
+                        <li><b>Команды:</b> /start — выбрать себя, /today — кто дежурит сегодня, /tomorrow — кто дежурит завтра, /birthdays — ближайшие дни рождения, /test — проверка уведомлений, /help — справка по боту.</li>
+                    </ul>
+                    <p>Уведомления приходят только в личные сообщения и только подключившимся сотрудникам. Если сообщения перестали приходить — проверьте, что вы не заблокировали бота.</p>
                 </div>
                 <div class="help-section">
                     <h4>📅 Календарь и фильтрация</h4>
