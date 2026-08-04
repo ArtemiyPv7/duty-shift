@@ -219,6 +219,24 @@ v1.2.0: навигация по месяцам перенесена в заго�
     box-shadow: 0 0 12px var(--accent-glow);
 }
 
+.nav-btn.tg-btn {
+  color: var(--vacation-color);
+  border-color: rgba(76, 201, 240, 0.35);
+  text-decoration: none;
+}
+
+.nav-btn.tg-btn:hover {
+  background: rgba(76, 201, 240, 0.15);
+  border-color: var(--vacation-color);
+  color: var(--vacation-color);
+  box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.nav-btn.tg-btn:focus-visible {
+  outline: 2px solid var(--vacation-color);
+  outline-offset: 2px;
+}
+
 /* ==========================================================================
 6. CALENDAR GRID (СЕТКА КАЛЕНДАРЯ)
 ========================================================================== */
@@ -368,17 +386,28 @@ v1.2.0: навигация по месяцам перенесена в заго�
 7. SIDEBAR & PANELS (БОКОВАЯ ПАНЕЛЬ)
 ========================================================================== */
 .sidebar {
+    position: relative;
+    }
+    /* v1.3.0: внутренний слой сайдбаpa. Сайдбар не участвует в расчёте
+    высоты ряда сетки — он просто растягивается до высоты календаря,
+    а контент скроллится внутри */
+    .sidebar-inner {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 100%;
 }
 
 .sidebar .glass-panel:last-child {
     display: flex;
     flex-direction: column;
-    flex: 1;
     min-height: 0;
+    }
+    /* v1.3.0: растягиваем панель сотрудников до низа календаря только
+    в раскрытом виде; свернутая занимает лишь высоту заголовка */
+    .sidebar .glass-panel:last-child:not(.collapsed) {
+    flex: 1;
 }
 
 .section-title {
@@ -478,7 +507,7 @@ v1.2.0: навигация по месяцам перенесена в заго�
     padding-right: 4px;
 }
 
-.staff-list { flex: 1; }
+.staff-list { flex: 1; min-height: 0; }
 .events-list { max-height: 160px; }
 
 .staff-item, .info-card {
@@ -1099,6 +1128,13 @@ select:focus-visible {
     .app-header {
         flex-direction: column;
         gap: 12px;
+    }
+
+    .sidebar {
+        position: static;
+    }
+    .sidebar-inner {
+        position: static;
     }
 
     /* v1.2.0: компактные кнопки навигации в заголовке календаря */
