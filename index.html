@@ -4,231 +4,248 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPM Roster</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <!-- Шрифт Inter (используется в style.css) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
+
+    <!-- Единственная runtime-зависимость: Supabase-клиент (нужен app.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js" defer></script>
 </head>
 <body>
+
+    <!-- Экран загрузки -->
     <div class="loading-overlay" id="loading-overlay">
-        <div class="spinner"></div>
-        <p>Загрузка...</p>
+        <div class="spinner" aria-hidden="true"></div>
+        <span>Загрузка...</span>
     </div>
 
     <div class="app-container">
-        <!-- ШАПКА: только заголовок и кнопка входа -->
+
+        <!-- Шапка -->
         <header class="app-header">
             <div class="title-group">
                 <h1>⚡ IPM <span>Roster</span></h1>
             </div>
-            <nav class="nav-btns">
-                <a href="https://t.me/ipm_roster_bot"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="nav-btn tg-btn"
-                    aria-label="Открыть Telegram-бота">✈️ Telegram</a>
-                <button type="button" id="auth-btn" class="nav-btn" onclick="handleAuthClick()">🔑 Вход</button>
+            <nav class="nav-btns" aria-label="Основная навигация">
+                <a class="nav-btn tg-btn" href="https://t.me/ipm_roster_bot" target="_blank" rel="noopener noreferrer">✈️ Telegram</a>
+                <button class="nav-btn" id="auth-btn" type="button">🔑 Вход</button>
             </nav>
         </header>
 
-        <!-- КАЛЕНДАРЬ: навигация по месяцам теперь в заголовке блока -->
+        <!-- Календарь -->
         <main class="main-section">
-            <section class="glass-panel">
+            <section class="glass-panel" aria-label="Календарь дежурств">
                 <div class="calendar-header">
-                    <span class="calendar-title" id="current-period-label">—</span>
-                    <div class="nav-btns" role="group" aria-label="Навигация по месяцам">
-                        <button type="button" class="nav-btn" onclick="navigatePeriod(-1)">← Пред</button>
-                        <button type="button" class="nav-btn" onclick="goToday()">Сегодня</button>
-                        <button type="button" class="nav-btn" onclick="navigatePeriod(1)">След →</button>
+                    <h2 class="calendar-title" id="current-period-label">—</h2>
+                    <div class="nav-btns">
+                        <button class="nav-btn" id="prev-month-btn" type="button">← Пред</button>
+                        <button class="nav-btn" id="today-btn" type="button">Сегодня</button>
+                        <button class="nav-btn" id="next-month-btn" type="button">След →</button>
                     </div>
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
             </section>
         </main>
 
+        <!-- Боковая панель -->
         <aside class="sidebar">
             <div class="sidebar-inner">
-            <!-- АНАЛИТИКА -->
-            <section class="glass-panel">
-                <h2 class="section-title">📊 Аналитика</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Дежурств / Месяц</div>
-                        <div class="stat-value" id="stat-user-month">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Дежурств / Год</div>
-                        <div class="stat-value" id="stat-user-year">-</div>
-                    </div>
-                    <div class="stat-card full-width">
-                        <div class="stat-label">Переработки (Фильтр / Месяц)</div>
-                        <div class="stat-value" id="stat-user-overtime">-</div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- ОТПУСКА (свёрнуто по умолчанию) -->
-            <section class="glass-panel collapsed" id="vacations-panel">
-                <h2 class="section-title" tabindex="0" aria-expanded="false" onclick="toggleSection('vacations-panel', event)">
-                    <span>🌴 Отпуска <span class="toggle-arrow" aria-hidden="true">▼</span></span>
-                    <span class="section-header-actions">
-                        <button type="button" class="icon-btn admin-only" aria-label="Добавить отпуск"
-                                aria-expanded="false" onclick="toggleForm('vacation-form', this, event)">+</button>
-                    </span>
-                </h2>
-                <div class="events-list" id="vacations-list"></div>
-                <form id="vacation-form" class="add-form admin-only" onsubmit="addVacation(event)">
-                    <input type="text" id="vacation-name" placeholder="Имя сотрудника" maxlength="60">
-                    <div class="form-row">
-                        <input type="date" id="vacation-start" aria-label="Начало отпуска">
-                        <input type="date" id="vacation-end" aria-label="Конец отпуска">
+                <!-- Аналитика -->
+                <section class="glass-panel" aria-label="Аналитика">
+                    <h3 class="section-title">📊 Аналитика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Дежурств / Месяц</div>
+                            <div class="stat-value" id="stat-user-month">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Дежурств / Год</div>
+                            <div class="stat-value" id="stat-user-year">-</div>
+                        </div>
+                        <div class="stat-card full-width">
+                            <div class="stat-label">Переработки (Фильтр / Месяц)</div>
+                            <div class="stat-value" id="stat-user-overtime">-</div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn">Добавить отпуск</button>
-                </form>
-            </section>
+                </section>
 
-            <!-- ДНИ РОЖДЕНИЯ (свёрнуто по умолчанию) -->
-            <section class="glass-panel collapsed" id="bday-panel">
-                <h2 class="section-title" tabindex="0" aria-expanded="false" onclick="toggleSection('bday-panel', event)">
-                    <span>🎂 Дни Рождения <span class="toggle-arrow" aria-hidden="true">▼</span></span>
-                    <span class="section-header-actions">
-                        <button type="button" class="icon-btn admin-only" aria-label="Добавить день рождения"
-                                aria-expanded="false" onclick="toggleForm('bday-form', this, event)">+</button>
-                    </span>
-                </h2>
-                <div class="events-list" id="birthdays-list"></div>
-                <form id="bday-form" class="add-form admin-only" onsubmit="addBirthday(event)">
-                    <input type="text" id="bday-name" placeholder="Имя" maxlength="60">
-                    <div class="form-row">
-                        <select id="bday-month" aria-label="Месяц рождения"></select>
-                        <input type="number" id="bday-day" min="1" max="31" placeholder="День">
-                    </div>
-                    <button type="submit" class="btn">Добавить ДР</button>
-                </form>
-            </section>
+                <!-- Отпуска -->
+                <section class="glass-panel collapsed" id="vacations-panel" aria-label="Отпуска">
+                    <h3 class="section-title" data-panel-toggle="vacations-panel" tabindex="0" role="button" aria-expanded="false">
+                        <span>🌴 Отпуска</span>
+                        <span class="section-header-actions">
+                            <button class="icon-btn admin-only" id="vacation-form-toggle" type="button" aria-label="Добавить отпуск" aria-expanded="false">+</button>
+                            <span class="toggle-arrow" aria-hidden="true">▼</span>
+                        </span>
+                    </h3>
+                    <div class="events-list" id="vacations-list"></div>
+                    <form class="add-form admin-only" id="vacation-form">
+                        <input type="text" id="vacation-name" placeholder="ФИО" autocomplete="off">
+                        <div class="form-row">
+                            <input type="date" id="vacation-start" aria-label="Начало отпуска">
+                            <input type="date" id="vacation-end" aria-label="Окончание отпуска">
+                        </div>
+                        <button class="btn" type="submit">Добавить отпуск</button>
+                    </form>
+                </section>
 
-            <!-- СОТРУДНИКИ -->
-            <section class="glass-panel" id="staff-panel">
-                <h2 class="section-title" tabindex="0" aria-expanded="true" onclick="toggleSection('staff-panel', event)">
-                    <span>👥 Сотрудники <span class="section-subtitle">(нажмите для фильтра)</span>
-                        <span class="toggle-arrow" aria-hidden="true">▼</span></span>
-                    <span class="section-header-actions">
-                        <button type="button" class="icon-btn admin-only" aria-label="Добавить сотрудника"
-                                aria-expanded="false" onclick="toggleForm('staff-form', this, event)">+</button>
-                    </span>
-                </h2>
-                <div class="staff-list" id="staff-list"></div>
-                <form id="staff-form" class="add-form admin-only" onsubmit="addStaff(event)">
-                    <input type="text" id="new-staff-name" placeholder="Имя сотрудника" maxlength="60">
-                    <button type="submit" class="btn">Добавить</button>
-                </form>
-            </section>
+                <!-- Дни рождения -->
+                <section class="glass-panel collapsed" id="bday-panel" aria-label="Дни рождения">
+                    <h3 class="section-title" data-panel-toggle="bday-panel" tabindex="0" role="button" aria-expanded="false">
+                        <span>🎂 Дни Рождения</span>
+                        <span class="section-header-actions">
+                            <button class="icon-btn admin-only" id="bday-form-toggle" type="button" aria-label="Добавить день рождения" aria-expanded="false">+</button>
+                            <span class="toggle-arrow" aria-hidden="true">▼</span>
+                        </span>
+                    </h3>
+                    <div class="events-list" id="birthdays-list"></div>
+                    <form class="add-form admin-only" id="bday-form">
+                        <input type="text" id="bday-name" placeholder="ФИО" autocomplete="off">
+                        <div class="form-row">
+                            <input type="number" id="bday-day" min="1" max="31" placeholder="День" aria-label="День месяца">
+                            <select id="bday-month" aria-label="Месяц"></select>
+                        </div>
+                        <button class="btn" type="submit">Добавить ДР</button>
+                    </form>
+                </section>
+
+                <!-- Сотрудники -->
+                <section class="glass-panel" id="staff-panel" aria-label="Сотрудники">
+                    <h3 class="section-title" data-panel-toggle="staff-panel" tabindex="0" role="button" aria-expanded="true">
+                        <span>👥 Сотрудники <span class="section-subtitle">(нажмите для фильтра)</span></span>
+                        <span class="section-header-actions">
+                            <button class="icon-btn admin-only" id="staff-form-toggle" type="button" aria-label="Добавить сотрудника" aria-expanded="false">+</button>
+                            <span class="toggle-arrow" aria-hidden="true">▼</span>
+                        </span>
+                    </h3>
+                    <div class="staff-list" id="staff-list"></div>
+                    <form class="add-form admin-only" id="staff-form">
+                        <div class="form-row">
+                            <input type="text" id="new-staff-name" placeholder="Имя сотрудника" autocomplete="off">
+                            <button class="btn" type="submit">Добавить</button>
+                        </div>
+                    </form>
+                </section>
+
             </div>
         </aside>
 
+        <!-- Подвал -->
         <footer class="app-footer">
             <div class="footer-copyright">
                 © IPM Roster
-                <span class="status-badge"><span class="status-dot"></span> Система работает</span>
+                <span class="status-badge"><span class="status-dot" aria-hidden="true"></span>Система работает</span>
             </div>
             <div class="footer-links">
-                <a class="footer-link version-tag" id="footer-version" href="#" onclick="openChangelogModal(event)">v1.1.5</a>
-                <a class="footer-link" href="#" onclick="openHelpModal(event)">Справка</a>
+                <a href="#" class="version-tag" id="footer-version" title="История обновлений">v1.0.0</a>
+                <a href="#" class="footer-link" id="help-link">Справка</a>
             </div>
         </footer>
     </div>
 
-    <!-- МОДАЛКА СМЕНЫ: добавлено поле «Часы переработки» -->
-    <div class="modal-overlay" id="shift-modal" role="dialog" aria-modal="true" aria-labelledby="modal-date-title">
-        <div class="modal">
+    <!-- Модалка: редактирование смены -->
+    <div class="modal-overlay" id="shift-modal">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-date-title">
             <h3 class="modal-title" id="modal-date-title">Редактирование</h3>
-            <select id="modal-staff-select" aria-label="Сотрудник"></select>
+            <div class="modal-field">
+                <label class="modal-label" for="modal-staff-select">Дежурный</label>
+                <select id="modal-staff-select"></select>
+            </div>
             <div class="modal-field">
                 <label class="modal-label" for="modal-overtime-input">Часы переработки</label>
-                <input type="number" id="modal-overtime-input" min="0" step="0.5" value="0" inputmode="decimal">
+                <input type="number" id="modal-overtime-input" min="0" step="0.5" value="0">
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn" id="modal-save-btn" onclick="saveModalShift()">Назначить</button>
-                <button type="button" class="btn danger-btn" onclick="deleteModalShift()">Снять</button>
-                <button type="button" class="btn cancel-btn" onclick="closeModal()">Отмена</button>
+                <button class="btn" id="modal-save-btn" type="button">Назначить</button>
+                <button class="btn danger-btn" id="modal-delete-btn" type="button">Снять</button>
+                <button class="btn cancel-btn" id="modal-cancel-btn" type="button">Отмена</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА ВХОДА -->
-    <div class="modal-overlay" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <div class="modal">
-            <h3 class="modal-title" id="auth-title">Вход администратора</h3>
-            <form id="auth-password-form" onsubmit="loginAdmin(event)">
+    <!-- Модалка: вход администратора -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+            <h3 class="modal-title" id="auth-modal-title">Вход администратора</h3>
+            <form id="auth-password-form">
                 <input type="password" id="auth-password-input" placeholder="Пароль" autocomplete="current-password">
             </form>
             <div class="modal-actions">
-                <button type="submit" class="btn" form="auth-password-form">Войти</button>
-                <button type="button" class="btn cancel-btn" onclick="closeAuthModal()">Отмена</button>
+                <button class="btn" type="submit" form="auth-password-form">Войти</button>
+                <button class="btn cancel-btn" id="auth-cancel-btn" type="button">Отмена</button>
             </div>
         </div>
     </div>
 
-    <!-- ЧЕЙНДЖЛОГ -->
-    <div class="modal-overlay" id="changelog-modal" role="dialog" aria-modal="true">
-        <div class="modal changelog-modal-content">
-            <h3 class="modal-title">История обновлений</h3>
+    <!-- Модалка: чейнджлог -->
+    <div class="modal-overlay" id="changelog-modal">
+        <div class="modal changelog-modal-content" role="dialog" aria-modal="true" aria-labelledby="changelog-modal-title">
+            <h3 class="modal-title" id="changelog-modal-title">История обновлений</h3>
             <div class="changelog-body" id="changelog-body"></div>
             <div class="modal-actions">
-                <button type="button" class="btn cancel-btn" onclick="closeChangelogModal()">Закрыть</button>
+                <button class="btn cancel-btn" id="changelog-close-btn" type="button">Закрыть</button>
             </div>
         </div>
     </div>
 
-    <!-- СПРАВКА -->
-    <div class="modal-overlay" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title">
-        <div class="modal help-modal-content">
-            <h3 class="modal-title" id="help-title">📖 Справка и руководство</h3>
+    <!-- Модалка: справка -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal help-modal-content" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+            <h3 class="modal-title" id="help-modal-title">📖 Справка и руководство</h3>
             <div class="help-body">
-                <div class="help-section">
+                <section class="help-section">
                     <h4>🚀 О системе</h4>
                     <p>IPM Roster — система для удобного просмотра, планирования и учета дежурств, отпусков и дней рождения сотрудников.</p>
-                </div>
-                <div class="help-section">
+                </section>
+                <section class="help-section">
                     <h4>🔑 Режимы доступа</h4>
-                    <p>Режим Гостя: просмотр актуального графика, списка отпусков, фильтрация смен и аналитика переработок.</p>
-                    <p>Режим Администратора: переключение по кнопке «🔑 Вход» (требуется пароль). Позволяет назначать/снимать дежурства, добавлять отпуска, дни рождения и управлять списком сотрудников.</p>
-                </div>
-                <div class="help-section">
+                    <ul>
+                        <li><b>Режим Гостя:</b> просмотр актуального графика, списка отпусков, фильтрация смен и аналитика переработок.</li>
+                        <li><b>Режим Администратора:</b> переключение по кнопке «🔑 Вход» (требуется пароль). Позволяет назначать/снимать дежурства, добавлять отпуска, дни рождения и управлять списком сотрудников.</li>
+                    </ul>
+                </section>
+                <section class="help-section">
                     <h4>✈️ Telegram-бот и уведомления</h4>
                     <p>У IPM Roster есть Telegram-бот <b>@ipm_roster_bot</b> — он присылает уведомления о дежурствах в личные сообщения. Открыть бота можно по кнопке «✈️ Telegram» в шапке сайта.</p>
                     <ul>
-                        <li><b>Подключение:</b> откройте бота, нажмите <b>Start</b> и выберите себя из списка сотрудников одной кнопкой. После этого вы будете получать рассылки автоматически.</li>
+                        <li><b>Подключение:</b> откройте бота, нажмите Start и выберите себя из списка сотрудников одной кнопкой. После этого вы будете получать рассылки автоматически.</li>
                         <li><b>07:50</b> — утренняя сводка: кто дежурит сегодня, а также дни рождения сегодня и завтра.</li>
                         <li><b>16:50</b> — вечернее напоминание: кто дежурит сегодня.</li>
                         <li><b>Команды:</b> /start — выбрать себя, /today — кто дежурит сегодня, /tomorrow — кто дежурит завтра, /birthdays — ближайшие дни рождения, /test — проверка уведомлений, /help — справка по боту.</li>
+                        <li>Уведомления приходят только в личные сообщения и только подключившимся сотрудникам. Если сообщения перестали приходить — проверьте, что вы не заблокировали бота.</li>
                     </ul>
-                    <p>Уведомления приходят только в личные сообщения и только подключившимся сотрудникам. Если сообщения перестали приходить — проверьте, что вы не заблокировали бота.</p>
-                </div>
-                <div class="help-section">
+                </section>
+                <section class="help-section">
                     <h4>📅 Календарь и фильтрация</h4>
-                    <p>Подсветка смен: нажмите на имя сотрудника в блоке «👥 Сотрудники» справа — все его дежурства на календаре подсветятся ярким цветом, а в аналитике рассчитаются его часы. Повторный клик сбрасывает фильтр.</p>
-                    <p>Обозначения: 👤 — дежурный сотрудник, 🎂 — день рождения, зеленая рамка — текущий день.</p>
-                    <p>Навигация: кнопки «← Пред» и «След →» в заголовке календаря переключают месяцы, а «Сегодня» быстро возвращает к текущей дате.</p>
-                </div>
-                <div class="help-section">
+                    <ul>
+                        <li><b>Подсветка смен:</b> нажмите на имя сотрудника в блоке «👥 Сотрудники» справа — все его дежурства на календаре подсветятся ярким цветом, а в аналитике рассчитаются его часы. Повторный клик сбрасывает фильтр.</li>
+                        <li><b>Обозначения:</b> 👤 — дежурный сотрудник, 🎂 — день рождения, зеленая рамка — текущий день.</li>
+                        <li><b>Навигация:</b> кнопки «← Пред» и «След →» в заголовке календаря переключают месяцы, а «Сегодня» быстро возвращает к текущей дате.</li>
+                    </ul>
+                </section>
+                <section class="help-section">
                     <h4>📊 Аналитика</h4>
                     <p>Блок рассчитывает количество смен выбранного сотрудника за месяц/год и суммирует часы переработок, которые администратор указывает в карточке каждой смены (поле «Часы переработки»).</p>
-                </div>
+                </section>
             </div>
             <div class="help-footer">
                 <label class="help-checkbox-label">
                     <input type="checkbox" id="dont-show-help-again">
                     Больше не показывать при входе
                 </label>
-                <button type="button" class="btn cancel-btn" onclick="closeHelpModal()">Закрыть</button>
+                <button class="btn cancel-btn" id="help-close-btn" type="button">Закрыть</button>
             </div>
         </div>
     </div>
 
-    <div id="toast-container"></div>
+    <!-- Toast-уведомления -->
+    <div id="toast-container" aria-live="polite"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
 </body>
 </html>
