@@ -53,7 +53,6 @@ const WEEKDAYS_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const CHANGE_TYPE_LABELS = { new: 'Новое', fix: 'Фикс', upd: 'Изм' };
 
 const CHANGELOG_DATA = [
-   const CHANGELOG_DATA = [
     {
         version: 'v1.4.1',
         date: 'Август 2026',
