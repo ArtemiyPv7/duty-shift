@@ -1,27 +1,28 @@
 /* ==========================================================================
-TABLE OF CONTENTS / ОГЛАВЛЕНИЕ
-CSS Variables (Переменные темы)
-Global Reset & Base Styles (Базовые стили)
-Custom Scrollbar (Кастомный скроллбар)
-App Layout (Сетка приложения)
-Header & Controls (Шапка и кнопки навигации)
-Calendar Grid (Сетка календаря и карточки дней)
-Sidebar & Glass Panels (Боковая панель)
-Stats & Analytics (Аналитика и карточки)
-Interactive Lists & Staff Items (Списки сотрудников и событий)
-Forms, Inputs & Buttons (Формы, поля ввода и кнопки)
-Modal Windows (Модальные окна, чейнджлог и справка)
-Footer (Подвал приложения)
-Toast Notifications (Уведомления)
-Loading Overlay (Экран загрузки)
-Focus & Accessibility (Клавиатурный фокус)
-Keyframe Animations (Анимации)
-Responsive Design (Мобильная адаптивность)
-========================================================================== */
+   IPM Roster — основной файл стилей
+   ОГЛАВЛЕНИЕ:
+   1.  CSS-переменные (тема)
+   2.  Глобальный сброс и базовые стили
+   3.  Кастомный скроллбар
+   4.  Сетка приложения
+   5.  Шапка и кнопки навигации
+   6.  Сетка календаря и карточки дней
+   7.  Боковая панель и glass-панели
+   8.  Аналитика
+   9.  Интерактивные списки (сотрудники и события)
+   10. Формы, поля ввода и кнопки
+   11. Модальные окна
+   12. Подвал
+   13. Toast-уведомления
+   14. Экран загрузки
+   15. Клавиатурный фокус и доступность
+   16. Keyframe-анимации
+   17. Мобильная адаптивность
+   ========================================================================== */
 
 /* ==========================================================================
-1. CSS VARIABLES (ПЕРЕМЕННЫЕ ТЕМЫ)
-========================================================================== */
+   1. CSS-ПЕРЕМЕННЫЕ (ТЕМА)
+   ========================================================================== */
 :root {
     --bg-color: #080a0f;
     --panel-color: rgba(18, 22, 31, 0.55);
@@ -38,12 +39,13 @@ Responsive Design (Мобильная адаптивность)
     --vacation-color: #4cc9f0;
     --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    color-scheme: dark; /* нативные контролы (date-picker и т.д.) в темной теме */
+    /* Нативные контролы (date-picker и т.д.) в тёмной теме */
+    color-scheme: dark;
 }
 
 /* ==========================================================================
-2. GLOBAL RESET & BASE STYLES
-========================================================================== */
+   2. ГЛОБАЛЬНЫЙ СБРОС И БАЗОВЫЕ СТИЛИ
+   ========================================================================== */
 *,
 *::before,
 *::after {
@@ -56,7 +58,7 @@ Responsive Design (Мобильная адаптивность)
 body {
     background-color: var(--bg-color);
     background-image:
-        /* Зеленый отблеск в левом верхнем углу */
+        /* Зелёный отблеск в левом верхнем углу */
         radial-gradient(circle at 0% 0%, rgba(0, 255, 136, 0.15) 0%, transparent 50%),
         /* Синий отблеск в правом нижнем углу */
         radial-gradient(circle at 100% 100%, rgba(76, 201, 240, 0.18) 0%, transparent 50%),
@@ -73,15 +75,15 @@ body {
 }
 
 /* ==========================================================================
-3. CUSTOM SCROLLBAR (КАСТОМНЫЙ СКРОЛЛБАР)
-========================================================================== */
-/* Для Firefox */
+   3. КАСТОМНЫЙ СКРОЛЛБАР
+   ========================================================================== */
+/* Firefox */
 html {
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 255, 136, 0.3) transparent;
 }
 
-/* Для WebKit (Chrome, Safari, Edge, Opera) */
+/* WebKit (Chrome, Safari, Edge, Opera) */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -114,16 +116,16 @@ html {
 }
 
 /* ==========================================================================
-4. APP LAYOUT (ОБЩАЯ СЕТКА)
-========================================================================== */
+   4. СЕТКА ПРИЛОЖЕНИЯ
+   ========================================================================== */
 .app-container {
     width: 100%;
     max-width: 1450px;
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 20px;
-    animation: fadeIn 0.6s ease-out;
     align-items: stretch;
+    animation: fadeIn 0.6s ease-out;
 }
 
 .app-header {
@@ -156,10 +158,8 @@ html {
 }
 
 /* ==========================================================================
-5. HEADER & CONTROLS (ШАПКА И НАВИГАЦИЯ)
-v1.2.0: навигация по месяцам перенесена в заголовок календаря,
-в шапке осталась только кнопка входа.
-========================================================================== */
+   5. ШАПКА И КНОПКИ НАВИГАЦИИ
+   ========================================================================== */
 .title-group h1 {
     font-size: 1.6rem;
     font-weight: 700;
@@ -180,12 +180,12 @@ v1.2.0: навигация по месяцам перенесена в заго�
 
 .nav-btns {
     display: flex;
+    gap: 4px;
     background: rgba(0, 0, 0, 0.3);
     padding: 4px;
     border-radius: 12px;
     border: 1px solid var(--glass-border-light);
     backdrop-filter: blur(10px);
-    gap: 4px;
 }
 
 .nav-btn {
@@ -210,7 +210,9 @@ v1.2.0: навигация по месяцам перенесена в заго�
     box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
 }
 
-.nav-btn:active { transform: translateY(0); }
+.nav-btn:active {
+    transform: translateY(0);
+}
 
 .nav-btn.active-auth {
     background: rgba(0, 255, 136, 0.2);
@@ -220,27 +222,26 @@ v1.2.0: навигация по месяцам перенесена в заго�
 }
 
 .nav-btn.tg-btn {
-  color: var(--vacation-color);
-  border-color: rgba(76, 201, 240, 0.35);
-  text-decoration: none;
+    color: var(--vacation-color);
+    border-color: rgba(76, 201, 240, 0.35);
+    text-decoration: none;
 }
 
 .nav-btn.tg-btn:hover {
-  background: rgba(76, 201, 240, 0.15);
-  border-color: var(--vacation-color);
-  color: var(--vacation-color);
-  box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+    background: rgba(76, 201, 240, 0.15);
+    border-color: var(--vacation-color);
+    color: var(--vacation-color);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
 }
 
 .nav-btn.tg-btn:focus-visible {
-  outline: 2px solid var(--vacation-color);
-  outline-offset: 2px;
+    outline: 2px solid var(--vacation-color);
+    outline-offset: 2px;
 }
 
 /* ==========================================================================
-6. CALENDAR GRID (СЕТКА КАЛЕНДАРЯ)
-========================================================================== */
-/* v1.2.0: заголовок календаря теперь содержит кнопки навигации */
+   6. СЕТКА КАЛЕНДАРЯ
+   ========================================================================== */
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -268,10 +269,11 @@ v1.2.0: навигация по месяцам перенесена в заго�
     color: var(--text-dim);
     font-size: 0.8rem;
     font-weight: 600;
-    transition: var(--transition-fast);
 }
 
-.weekday.weekend { color: var(--weekend-color); }
+.weekday.weekend {
+    color: var(--weekend-color);
+}
 
 .day-card {
     background: rgba(255, 255, 255, 0.025);
@@ -305,9 +307,13 @@ v1.2.0: навигация по месяцам перенесена в заго�
 }
 
 /* Гостям календарь не кликабелен — убираем обманный курсор */
-.day-card.readonly { cursor: default; }
+.day-card.readonly {
+    cursor: default;
+}
 
-.day-card.is-weekend { background: var(--weekend-bg); }
+.day-card.is-weekend {
+    background: var(--weekend-bg);
+}
 
 /* Выделение текущего дня */
 .day-card.is-today {
@@ -339,7 +345,9 @@ v1.2.0: навигация по месяцам перенесена в заго�
     transition: var(--transition-fast);
 }
 
-.day-card:hover .day-number { color: #fff; }
+.day-card:hover .day-number {
+    color: #fff;
+}
 
 .duty-tag {
     background: rgba(0, 255, 136, 0.08);
@@ -378,20 +386,19 @@ v1.2.0: навигация по месяцам перенесена в заго�
     border-radius: 6px;
     margin-top: auto;
     backdrop-filter: blur(4px);
-    transition: var(--transition-fast);
     animation: pulseGlow 3s infinite ease-in-out;
 }
 
 /* ==========================================================================
-7. SIDEBAR & PANELS (БОКОВАЯ ПАНЕЛЬ)
-========================================================================== */
+   7. БОКОВАЯ ПАНЕЛЬ И GLASS-ПАНЕЛИ
+   ========================================================================== */
 .sidebar {
     position: relative;
-    }
-    /* v1.3.0: внутренний слой сайдбаpa. Сайдбар не участвует в расчёте
-    высоты ряда сетки — он просто растягивается до высоты календаря,
-    а контент скроллится внутри */
-    .sidebar-inner {
+}
+
+/* Внутренний слой сайдбара: он не участвует в расчёте высоты ряда сетки —
+   просто растягивается до высоты календаря, контент скроллится внутри */
+.sidebar-inner {
     position: absolute;
     inset: 0;
     display: flex;
@@ -399,14 +406,15 @@ v1.2.0: навигация по месяцам перенесена в заго�
     gap: 15px;
 }
 
+/* Панель сотрудников (последняя в сайдбаре) — flex-колонка */
 .sidebar .glass-panel:last-child {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    }
-    /* v1.3.0: растягиваем панель сотрудников до низа календаря только
-    в раскрытом виде; свернутая занимает лишь высоту заголовка */
-    .sidebar .glass-panel:last-child:not(.collapsed) {
+}
+
+/* Растягиваем панель сотрудников до низа календаря только в раскрытом виде */
+.sidebar .glass-panel:last-child:not(.collapsed) {
     flex: 1;
 }
 
@@ -417,9 +425,18 @@ v1.2.0: навигация по месяцам перенесена в заго�
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: pointer;
+    gap: 8px;
     user-select: none;
     transition: var(--transition-fast);
+}
+
+/* Кликабельны только сворачиваемые заголовки */
+.section-title[data-panel-toggle] {
+    cursor: pointer;
+}
+
+.section-title[data-panel-toggle]:hover {
+    color: var(--accent-green);
 }
 
 .section-subtitle {
@@ -436,15 +453,16 @@ v1.2.0: навигация по месяцам перенесена в заго�
 
 .toggle-arrow {
     font-size: 0.75rem;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-dim);
-    margin-left: 6px;
     display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-panel.collapsed .toggle-arrow { transform: rotate(-90deg); }
+.glass-panel.collapsed .toggle-arrow {
+    transform: rotate(-90deg);
+}
 
-/* v1.2.0: свернутая секция скрывает список, список сотрудников и форму добавления */
+/* Свёрнутая секция скрывает список и форму добавления */
 .glass-panel.collapsed .events-list,
 .glass-panel.collapsed .staff-list,
 .glass-panel.collapsed .add-form {
@@ -452,8 +470,8 @@ v1.2.0: навигация по месяцам перенесена в заго�
 }
 
 /* ==========================================================================
-8. STATS & ANALYTICS (АНАЛИТИКА)
-========================================================================== */
+   8. АНАЛИТИКА
+   ========================================================================== */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -476,7 +494,9 @@ v1.2.0: навигация по месяцам перенесена в заго�
     background: rgba(0, 255, 136, 0.04);
 }
 
-.stat-card.full-width { grid-column: span 2; }
+.stat-card.full-width {
+    grid-column: span 2;
+}
 
 .stat-value {
     font-size: 1.15rem;
@@ -485,7 +505,6 @@ v1.2.0: навигация по месяцам перенесена в заго�
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: var(--transition-fast);
 }
 
 .stat-label {
@@ -495,9 +514,10 @@ v1.2.0: навигация по месяцам перенесена в заго�
 }
 
 /* ==========================================================================
-9. INTERACTIVE LISTS & STAFF ITEMS
-========================================================================== */
-.staff-list, .events-list {
+   9. ИНТЕРАКТИВНЫЕ СПИСКИ (СОТРУДНИКИ И СОБЫТИЯ)
+   ========================================================================== */
+.staff-list,
+.events-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -507,10 +527,17 @@ v1.2.0: навигация по месяцам перенесена в заго�
     padding-right: 4px;
 }
 
-.staff-list { flex: 1; min-height: 0; }
-.events-list { max-height: 160px; }
+.staff-list {
+    flex: 1;
+    min-height: 0;
+}
 
-.staff-item, .info-card {
+.events-list {
+    max-height: 160px;
+}
+
+.staff-item,
+.info-card {
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid var(--glass-border-light);
     padding: 8px 12px;
@@ -528,7 +555,7 @@ v1.2.0: навигация по месяцам перенесена в заго�
 .staff-item {
     cursor: pointer;
     position: relative;
-    min-height: 38px; /* длинные имена больше не обрезаются */
+    min-height: 38px; /* длинные имена не обрезаются */
 }
 
 .staff-info {
@@ -546,7 +573,6 @@ v1.2.0: навигация по месяцам перенесена в заго�
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: var(--transition-fast);
 }
 
 .staff-action-hint {
@@ -569,9 +595,12 @@ v1.2.0: навигация по месяцам перенесена в заго�
     opacity: 0.7;
 }
 
-.staff-item.active:hover .staff-action-hint { opacity: 1; }
+.staff-item.active:hover .staff-action-hint {
+    opacity: 1;
+}
 
-.staff-item:hover, .info-card:hover {
+.staff-item:hover,
+.info-card:hover {
     border-color: rgba(0, 255, 136, 0.3);
     background: rgba(0, 255, 136, 0.05);
     transform: translateX(3px);
@@ -583,8 +612,13 @@ v1.2.0: навигация по месяцам перенесена в заго�
     box-shadow: inset 3px 0 0 var(--accent-green), 0 0 10px var(--accent-glow);
 }
 
-.info-card.vacation { border-left: 3px solid var(--vacation-color); }
-.info-card.bday { border-left: 3px solid var(--cake-color); }
+.info-card.vacation {
+    border-left: 3px solid var(--vacation-color);
+}
+
+.info-card.bday {
+    border-left: 3px solid var(--cake-color);
+}
 
 .empty-hint {
     font-size: 0.75rem;
@@ -612,9 +646,13 @@ v1.2.0: навигация по месяцам перенесена в заго�
 }
 
 /* ==========================================================================
-10. FORMS, INPUTS & BUTTONS
-========================================================================== */
-input[type="text"], input[type="number"], input[type="date"], input[type="password"], select {
+   10. ФОРМЫ, ПОЛЯ ВВОДА И КНОПКИ
+   ========================================================================== */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="password"],
+select {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--glass-border-light);
     color: #fff;
@@ -627,8 +665,11 @@ input[type="text"], input[type="number"], input[type="date"], input[type="passwo
     transition: var(--transition-fast);
 }
 
-input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus,
-input[type="password"]:focus, select:focus {
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="password"]:focus,
+select:focus {
     border-color: var(--accent-green);
     box-shadow: 0 0 12px var(--accent-glow);
     background: rgba(0, 0, 0, 0.6);
@@ -653,7 +694,9 @@ input[type="password"]:focus, select:focus {
     filter: brightness(1.1);
 }
 
-.btn:active { transform: translateY(0); }
+.btn:active {
+    transform: translateY(0);
+}
 
 .btn:disabled {
     opacity: 0.45;
@@ -697,14 +740,18 @@ input[type="password"]:focus, select:focus {
     animation: slideDown 0.3s ease-out;
 }
 
-.add-form.active { display: flex; }
+.add-form.active {
+    display: flex;
+}
 
 .form-row {
     display: flex;
     gap: 6px;
 }
 
-.form-row > * { flex: 1; }
+.form-row > * {
+    flex: 1;
+}
 
 .icon-btn {
     background: rgba(255, 255, 255, 0.04);
@@ -746,11 +793,14 @@ input[type="password"]:focus, select:focus {
 }
 
 /* ==========================================================================
-11. MODAL WINDOWS (МОДАЛЬНЫЕ ОКНА)
-========================================================================== */
+   11. МОДАЛЬНЫЕ ОКНА
+   ========================================================================== */
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -762,7 +812,9 @@ input[type="password"]:focus, select:focus {
     transition: opacity 0.3s ease;
 }
 
-.modal-overlay.active { opacity: 1; }
+.modal-overlay.active {
+    opacity: 1;
+}
 
 .modal {
     background: var(--panel-color);
@@ -770,6 +822,7 @@ input[type="password"]:focus, select:focus {
     padding: 24px;
     border-radius: 20px;
     width: 320px;
+    max-width: 90vw;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -780,7 +833,9 @@ input[type="password"]:focus, select:focus {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.modal-overlay.active .modal { transform: scale(1); }
+.modal-overlay.active .modal {
+    transform: scale(1);
+}
 
 .modal-title {
     font-size: 1rem;
@@ -788,7 +843,6 @@ input[type="password"]:focus, select:focus {
     color: #fff;
 }
 
-/* v1.2.0: поле «Часы переработки» в модалке смены */
 .modal-field {
     display: flex;
     flex-direction: column;
@@ -806,19 +860,22 @@ input[type="password"]:focus, select:focus {
     flex-wrap: wrap;
 }
 
-.modal-actions .btn { flex: 1; }
+.modal-actions .btn {
+    flex: 1;
+}
 
-#auth-password-form { display: flex; }
+#auth-password-form {
+    display: flex;
+}
 
 #auth-password-input {
     width: 100%;
     padding: 10px 14px;
 }
 
-/* Модальное окно чейнджлога */
+/* Чейнджлог */
 .changelog-modal-content {
     width: 440px;
-    max-width: 90vw;
 }
 
 .changelog-body {
@@ -836,7 +893,9 @@ input[type="password"]:focus, select:focus {
     padding-bottom: 12px;
 }
 
-.changelog-version-block:last-child { border-bottom: none; }
+.changelog-version-block:last-child {
+    border-bottom: none;
+}
 
 .changelog-version-header {
     display: flex;
@@ -845,8 +904,15 @@ input[type="password"]:focus, select:focus {
     margin-bottom: 6px;
 }
 
-.changelog-version { color: #fff; font-size: 0.95rem; }
-.changelog-date { font-size: 0.75rem; color: var(--text-dim); }
+.changelog-version {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.changelog-date {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
 
 .changelog-list {
     list-style: none;
@@ -878,14 +944,16 @@ input[type="password"]:focus, select:focus {
 .type-fix { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
 .type-upd { background: rgba(76, 201, 240, 0.15); color: var(--vacation-color); }
 
-/* Модальное окно справки */
+/* Справка */
 .help-modal-content {
     width: 680px;
-    max-width: 90vw;
     max-height: 85vh;
 }
 
+/* flex:1 + min-height:0 — иначе содержимое не скроллилось внутри модалки */
 .help-body {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding-right: 8px;
     display: flex;
@@ -899,12 +967,38 @@ input[type="password"]:focus, select:focus {
     padding-bottom: 12px;
 }
 
-.help-section:last-child { border-bottom: none; padding-bottom: 0; }
-.help-section h4 { color: var(--accent-green); font-size: 0.95rem; margin-bottom: 6px; }
-.help-section p, .help-section li { font-size: 0.85rem; color: var(--text-main); line-height: 1.45; }
-.help-section p + p { margin-top: 6px; }
-.help-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-.help-section b { color: #fff; }
+.help-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.help-section h4 {
+    color: var(--accent-green);
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+
+.help-section p,
+.help-section li {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    line-height: 1.45;
+}
+
+.help-section p + p {
+    margin-top: 6px;
+}
+
+.help-section ul {
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.help-section b {
+    color: #fff;
+}
 
 .help-footer {
     display: flex;
@@ -931,8 +1025,8 @@ input[type="password"]:focus, select:focus {
 }
 
 /* ==========================================================================
-12. FOOTER (ПОДВАЛ)
-========================================================================== */
+   12. ПОДВАЛ
+   ========================================================================== */
 .app-footer {
     grid-column: 1 / -1;
     width: 100%;
@@ -994,7 +1088,9 @@ input[type="password"]:focus, select:focus {
     animation: pulseDot 2s infinite;
 }
 
+/* Версия в футере — кликабельная ссылка на чейнджлог */
 .version-tag {
+    display: inline-block;
     background: rgba(0, 255, 136, 0.12);
     border: 1px solid rgba(0, 255, 136, 0.3);
     color: var(--accent-green);
@@ -1002,11 +1098,19 @@ input[type="password"]:focus, select:focus {
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.version-tag:hover {
+    box-shadow: 0 0 10px var(--accent-glow);
+    filter: brightness(1.2);
 }
 
 /* ==========================================================================
-13. TOAST NOTIFICATIONS (УВЕДОМЛЕНИЯ)
-========================================================================== */
+   13. TOAST-УВЕДОМЛЕНИЯ
+   ========================================================================== */
 #toast-container {
     position: fixed;
     bottom: 20px;
@@ -1041,11 +1145,11 @@ input[type="password"]:focus, select:focus {
 }
 
 .toast-success { border-left: 3px solid var(--accent-green); }
-.toast-error { border-left: 3px solid var(--danger); }
+.toast-error   { border-left: 3px solid var(--danger); }
 
 /* ==========================================================================
-14. LOADING OVERLAY (ЭКРАН ЗАГРУЗКИ)
-========================================================================== */
+   14. ЭКРАН ЗАГРУЗКИ
+   ========================================================================== */
 .loading-overlay {
     position: fixed;
     inset: 0;
@@ -1071,8 +1175,8 @@ input[type="password"]:focus, select:focus {
 }
 
 /* ==========================================================================
-15. FOCUS & ACCESSIBILITY (КЛАВИАТУРНЫЙ ФОКУС)
-========================================================================== */
+   15. КЛАВИАТУРНЫЙ ФОКУС И ДОСТУПНОСТЬ
+   ========================================================================== */
 .day-card:focus-visible,
 .staff-info:focus-visible,
 .section-title:focus-visible,
@@ -1081,6 +1185,7 @@ input[type="password"]:focus, select:focus {
 .icon-btn:focus-visible,
 .delete-btn:focus-visible,
 .footer-link:focus-visible,
+.version-tag:focus-visible,
 input:focus-visible,
 select:focus-visible {
     outline: 2px solid var(--accent-green);
@@ -1088,26 +1193,26 @@ select:focus-visible {
 }
 
 /* ==========================================================================
-16. KEYFRAME ANIMATIONS (АНИМАЦИИ)
-========================================================================== */
+   16. KEYFRAME-АНИМАЦИИ
+   ========================================================================== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 0 rgba(255, 183, 3, 0); }
-    50% { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
+    50%      { box-shadow: 0 0 8px rgba(255, 183, 3, 0.4); }
 }
 
 @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
+    50%      { opacity: 0.4; transform: scale(0.8); }
 }
 
 @keyframes spin {
@@ -1115,10 +1220,12 @@ select:focus-visible {
 }
 
 /* ==========================================================================
-17. RESPONSIVE DESIGN (МОБИЛЬНАЯ АДАПТИВНОСТЬ)
-========================================================================== */
+   17. МОБИЛЬНАЯ АДАПТИВНОСТЬ
+   ========================================================================== */
 @media (max-width: 768px) {
-    body { padding: 8px; }
+    body {
+        padding: 8px;
+    }
 
     .app-container {
         grid-template-columns: 1fr;
@@ -1130,14 +1237,11 @@ select:focus-visible {
         gap: 12px;
     }
 
-    .sidebar {
-        position: static;
-    }
+    .sidebar,
     .sidebar-inner {
         position: static;
     }
 
-    /* v1.2.0: компактные кнопки навигации в заголовке календаря */
     .nav-btn {
         padding: 4px 10px;
         font-size: 0.75rem;
@@ -1159,7 +1263,9 @@ select:focus-visible {
         border-radius: 10px;
     }
 
-    .day-number { font-size: 11px; }
+    .day-number {
+        font-size: 11px;
+    }
 
     .duty-tag {
         font-size: 9px;
